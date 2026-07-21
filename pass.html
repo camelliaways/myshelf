@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KWJH-8 // MATRIX PLAYER PASS SYSTEM</title>
+  <meta name="description" content="光武國中 8 年級資訊科技課程 駭客任務風格學生玩家通行證建立系統。">
+  
+  <!-- Google Fonts: VT323 / Fira Code / JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;700&family=JetBrains+Mono:wght@500;700;800&family=Share+Tech+Mono&family=VT323&family=Noto+Sans+TC:wght@400;700;900&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="pass.css">
+</head>
+<body class="matrix-theme">
+
+  <!-- 駭客任務綠色代碼雨 Canvas 背景 -->
+  <canvas id="matrix-canvas"></canvas>
+
+  <!-- CRT 掃描線濾鏡遮罩 -->
+  <div class="crt-overlay"></div>
+
+  <!-- 駭客任務 Terminal 啟動 LOADING 動畫 Overlay -->
+  <div id="matrix-loader-overlay" class="matrix-loader-overlay">
+    <div class="matrix-loader-card matrix-box">
+      <div class="box-header-bar">
+        <span>[ BOOT_SEQUENCE // MATRIX_v2.0 ]</span>
+        <span class="matrix-blink-dot"></span>
+      </div>
+      <div class="loader-body-content">
+        <h2 class="loader-title">&gt; INITIALIZING_PLAYER_PROFILE...</h2>
+        <div class="matrix-terminal-logs">
+          <div class="m-log" data-delay="200">&gt; CONNECTING TO SERVER: KWJH_CS_8 [OK]</div>
+          <div class="m-log" data-delay="600">&gt; DECRYPTING NEURAL PROTOCOLS... [OK]</div>
+          <div class="m-log" data-delay="1000">&gt; AUTHENTICATING PLAYER CALLSIGN... [OK]</div>
+          <div class="m-log" data-delay="1400">&gt; ALLOCATING DIGITIZED PASS CARD... [OK]</div>
+          <div class="m-log highlight" data-delay="1800">&gt; STATUS: ACCESS_GRANTED 100%</div>
+        </div>
+        <div class="matrix-progress-container">
+          <div id="matrix-progress-fill" class="matrix-progress-fill"></div>
+        </div>
+        <div class="loader-status-text">
+          <span>PROGRESS: <strong id="matrix-percent-text">0</strong>%</span>
+          <button id="skip-matrix-loader" class="matrix-btn sm-btn">[ SKIP_BOOT ]</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 頂部終端機導覽列 -->
+  <header class="matrix-header">
+    <div class="container header-inner">
+      <div class="matrix-brand">
+        <span class="matrix-blink-dot"></span>
+        <span class="brand-text">[ TERMINAL_V2.0 ] MATRIX :: KWJH-INFO-8</span>
+      </div>
+      <div class="nav-extra">
+        <a href="index.html" class="matrix-link">&gt; EXIT_TO_MAIN_PAGE &rarr;</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="main-wrapper">
+    <div class="container">
+      
+      <!-- 駭客終端機標題區 -->
+      <div class="hero-title-box text-center">
+        <div class="matrix-badge">[ SYSTEM_INIT // DIRECT_CONNECTED_TO_SHEET ]</div>
+        <h1 class="main-title matrix-glitch" data-text="> CREATE YOUR PLAYER PASS _">
+          &gt; CREATE YOUR PLAYER PASS <span class="blink-cursor">_</span>
+        </h1>
+        <p class="main-desc font-tech">
+          SYSTEM_PROMPT: 歡迎登入光武國中 8 年級資訊 Matrix。請選擇班級 (801~818 班) 並建立個人通行證：
+        </p>
+      </div>
+
+      <!-- 8 年級 18 個班級快速分頁列 (801 ~ 818 班) -->
+      <div class="class-tab-bar border-matrix" id="class-tab-bar">
+        <span class="tab-label">&gt; CLASS_TAB:</span>
+        <div class="tab-scroll-wrapper">
+          <button class="class-tab-btn active" data-class="801">801</button>
+          <button class="class-tab-btn" data-class="802">802</button>
+          <button class="class-tab-btn" data-class="803">803</button>
+          <button class="class-tab-btn" data-class="804">804</button>
+          <button class="class-tab-btn" data-class="805">805</button>
+          <button class="class-tab-btn" data-class="806">806</button>
+          <button class="class-tab-btn" data-class="807">807</button>
+          <button class="class-tab-btn" data-class="808">808</button>
+          <button class="class-tab-btn" data-class="809">809</button>
+          <button class="class-tab-btn" data-class="810">810</button>
+          <button class="class-tab-btn" data-class="811">811</button>
+          <button class="class-tab-btn" data-class="812">812</button>
+          <button class="class-tab-btn" data-class="813">813</button>
+          <button class="class-tab-btn" data-class="814">814</button>
+          <button class="class-tab-btn" data-class="815">815</button>
+          <button class="class-tab-btn" data-class="816">816</button>
+          <button class="class-tab-btn" data-class="817">817</button>
+          <button class="class-tab-btn" data-class="818">818</button>
+        </div>
+      </div>
+
+      <!-- 背景自動同步 status bar (零設定，直接直連) -->
+      <div class="matrix-box gform-notice-box" id="gform-notice">
+        <div class="gform-notice-inner">
+          <span class="icon-terminal">&gt;_</span>
+          <div class="notice-text">
+            <strong>[ SPREADSHEET_DIRECT_SYNC: ACTIVE ]</strong>
+            <p>已直接硬編碼連結試算表 <code>1NwiIsZWLTcpm0D0GwMHMKTh1GoB5h66iKooXr0yBLFg</code>，生成與修改卡片將直接自動同步！</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-pass-grid">
+        <!-- 左側：終端機表單區 -->
+        <div class="matrix-box form-container-card">
+          <div class="box-header-bar">
+            <span>[ FORM_INPUT_TERMINAL ]</span>
+            <span id="current-class-tag">ACTIVE_CLASS: 801</span>
+          </div>
+
+          <form id="student-pass-form" onsubmit="return false;">
+            
+            <!-- Q1: 暱稱稱呼 -->
+            <div class="form-group">
+              <label for="p-name">&gt; Q1. INPUT_CALLSIGN (希望老師課堂上怎麼稱呼你？) <span class="req">*</span></label>
+              <span class="input-hint">// 可以填寫暱稱、英文名字或綽號</span>
+              <input type="text" id="p-name" class="matrix-input" placeholder="e.g. Neo / 小明 / Alex" required>
+            </div>
+
+            <!-- Q2: 班級座號 -->
+            <div class="form-group">
+              <label for="p-class-select">&gt; Q2. SELECT_CLASS_AND_SEAT (選擇班級與座號) <span class="req">*</span></label>
+              <span class="input-hint">// 班級 (801 ~ 818 班) 與座號</span>
+              <div class="input-inline">
+                <select id="p-class-select" class="matrix-select" style="width: 45%;">
+                  <option value="801 班">801 班</option>
+                  <option value="802 班">802 班</option>
+                  <option value="803 班">803 班</option>
+                  <option value="804 班">804 班</option>
+                  <option value="805 班">805 班</option>
+                  <option value="806 班">806 班</option>
+                  <option value="807 班">807 班</option>
+                  <option value="808 班">808 班</option>
+                  <option value="809 班">809 班</option>
+                  <option value="810 班">810 班</option>
+                  <option value="811 班">811 班</option>
+                  <option value="812 班">812 班</option>
+                  <option value="813 班">813 班</option>
+                  <option value="814 班">814 班</option>
+                  <option value="815 班">815 班</option>
+                  <option value="816 班">816 班</option>
+                  <option value="817 班">817 班</option>
+                  <option value="818 班">818 班</option>
+                </select>
+                <input type="number" id="p-seat-input" class="matrix-input" min="1" max="50" placeholder="座號 (例如：15)" style="width: 55%;" required>
+              </div>
+            </div>
+
+            <!-- Q3: 平時電腦習慣 -->
+            <div class="form-group">
+              <label for="p-usage">&gt; Q3. SELECT_COMPUTER_HABIT (平時電腦最常做什麼？)</label>
+              <select id="p-usage" class="matrix-select">
+                <option value="看 YouTube / 追劇 / 聽音樂">看 YouTube / 追劇 / 聽音樂</option>
+                <option value="打電競 / 玩電腦遊戲">打電競 / 玩電腦遊戲</option>
+                <option value="繪圖 / 剪輯影片 / 創作者">繪圖 / 剪輯影片 / 創作者</option>
+                <option value="做報告 / 查資料 / 學習">做報告 / 查資料 / 學習</option>
+                <option value="寫程式 / 探索軟體">寫程式 / 探索軟體</option>
+              </select>
+            </div>
+
+            <!-- Q4: 資訊技能解鎖 -->
+            <div class="form-group">
+              <label>&gt; Q4. UNLOCKED_TECH_SKILLS (曾經用過哪些資訊工具？可多選)</label>
+              <div class="chip-group">
+                <label class="matrix-chip"><input type="checkbox" name="p-tools" value="Scratch 積木程式"> Scratch 積木程式</label>
+                <label class="matrix-chip"><input type="checkbox" name="p-tools" value="Canva 簡報設計"> Canva 簡報設計</label>
+                <label class="matrix-chip"><input type="checkbox" name="p-tools" value="Python 程式語言"> Python 程式語言</label>
+                <label class="matrix-chip"><input type="checkbox" name="p-tools" value="Micro:bit / 硬體"> Micro:bit / 硬體</label>
+                <label class="matrix-chip"><input type="checkbox" name="p-tools" value="ChatGPT / AI 工具"> ChatGPT / AI 工具</label>
+                <label class="matrix-chip"><input type="checkbox" name="p-tools" value="只有上過國一資訊課"> 只有上過國一資訊課</label>
+              </div>
+            </div>
+
+            <!-- Q5: 學期願望與特別提醒 -->
+            <div class="form-group">
+              <label for="p-wish">&gt; Q5. INPUT_QUEST_GOAL_AND_NOTES (學期願望與特別提醒)</label>
+              <textarea id="p-wish" class="matrix-textarea" rows="3" placeholder="// 想學會做小遊戲、打字較慢希望老師示範慢點..."></textarea>
+            </div>
+
+            <!-- 表單按鈕區 -->
+            <div class="action-buttons">
+              <button type="submit" id="generate-pass-btn" class="matrix-btn btn-primary btn-large">
+                [ ⚡ INITIALIZE PLAYER PASS & SAVE TO SHEET ]
+              </button>
+            </div>
+
+          </form>
+        </div>
+
+        <!-- 右側：駭客卡片預覽區 -->
+        <div class="card-preview-wrapper">
+          <div class="preview-header text-center">
+            <span class="preview-label">&gt; PLAYER_PASS_CARD_DISPLAY</span>
+          </div>
+
+          <!-- 駭客任務卡片本體 -->
+          <div id="pass-card" class="matrix-box pass-card-box">
+            <div class="pass-card-top">
+              <div class="pass-brand-title font-tech">
+                [ ACCESS_GRANTED ] KWJH_MATRIX
+              </div>
+              <span class="pass-status-badge" id="pass-status-tag">[ STATUS: READY ]</span>
+            </div>
+
+            <div class="pass-card-body">
+              <div class="pass-avatar-matrix" id="pass-avatar-bg">
+                <span id="pass-avatar-letter">P</span>
+              </div>
+              <div class="pass-details font-tech">
+                <div class="pass-row">
+                  <span class="p-label">CALLSIGN:</span>
+                  <strong id="card-name" class="p-val">--</strong>
+                </div>
+                <div class="pass-row">
+                  <span class="p-label">CLASS_SEAT:</span>
+                  <span id="card-class" class="p-val">--</span>
+                </div>
+                <div class="pass-row">
+                  <span class="p-label">HABIT:</span>
+                  <span id="card-usage" class="p-val">--</span>
+                </div>
+                <div class="pass-row">
+                  <span class="p-label">SKILLS:</span>
+                  <span id="card-tools" class="p-val">--</span>
+                </div>
+                <div class="pass-row">
+                  <span class="p-label">GOAL:</span>
+                  <span id="card-wish" class="p-val">--</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="pass-card-bottom font-tech">
+              <span>INSTRUCTOR: MR. ZHUO // SERVER: KWJH-8</span>
+              <span class="stamp-verified">[ AUTHORIZED ✓ ]</span>
+            </div>
+          </div>
+
+          <!-- 卡片動作列 -->
+          <div class="card-actions-box text-center" id="card-actions" style="display: none;">
+            <button id="print-card-btn" class="matrix-btn btn-primary btn-sm">
+              [ 🖨️ PRINT / SAVE PASS ]
+            </button>
+            <button id="reset-card-btn" class="matrix-btn btn-outline btn-sm">
+              [ ✏️ EDIT PARAMETERS ]
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </main>
+
+  <footer class="matrix-footer text-center font-tech">
+    <p>© 2026 KWJH INFO CS 8 MATRIX // MR. ZHUO 
+      ‧ <a href="https://www.behance.net/syuanCho" target="_blank" rel="noopener noreferrer" class="matrix-link">BEHANCE PORTFOLIO ↗</a>
+    </p>
+  </footer>
+
+  <script src="pass.js"></script>
+</body>
+</html>

@@ -1,0 +1,738 @@
+/* ==========================================================================
+   MINIMALIST MONOCHROME DESIGN SYSTEM (純黑白極簡雜誌風格)
+   ========================================================================== */
+
+:root {
+  /* 絕對單色 Token 系統 (Strictly Monochrome) */
+  --bg-white: #FFFFFF;
+  --fg-black: #000000;
+  --bg-muted: #F5F5F5;
+  --fg-muted: #525252;
+  
+  --border-black: #000000;
+  --border-light: #E5E5E5;
+  
+  /* 字體系統 */
+  --font-display: "Playfair Display", Georgia, serif;
+  --font-body: "Source Serif 4", Georgia, serif;
+  --font-mono: "JetBrains Mono", monospace;
+  --font-sans: "Noto Sans TC", sans-serif;
+  
+  /* 圓角：絕對 0px */
+  --radius-none: 0px;
+  
+  /* 轉場：極速與瞬間 (0-100ms) */
+  --transition-instant: all 100ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+/* 全域重設 */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  border-radius: 0px !important; /* 絕對無圓角 */
+}
+
+html {
+  scroll-behavior: smooth;
+  font-family: var(--font-body);
+  background-color: var(--bg-white);
+  color: var(--fg-black);
+  line-height: 1.6;
+}
+
+body {
+  overflow-x: hidden;
+  position: relative;
+  cursor: crosshair;
+}
+
+/* 紋理：紙張噪點 (Noise Texture) */
+.bg-noise-pattern {
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.02'/%3E%3C/svg%3E");
+}
+
+/* 紋理：細水平掃描線 (Horizontal Lines Pattern) */
+.bg-lines-pattern {
+  background-image: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 1px,
+    #000000 1px,
+    #000000 2px
+  );
+  background-size: 100% 4px;
+}
+
+/* 容器與邊框系統 */
+.container {
+  max-width: 1152px;
+  margin: 0 auto;
+  padding: 0 32px;
+}
+
+.border-bottom-thin { border-bottom: 1px solid var(--border-black); }
+.border-bottom-medium { border-bottom: 2px solid var(--border-black); }
+.border-bottom-thick { border-bottom: 4px solid var(--border-black); }
+
+.border-thin { border: 1px solid var(--border-black); }
+.border-medium { border: 2px solid var(--border-black); }
+.border-thick { border: 4px solid var(--border-black); }
+
+.border-top-thin { border-top: 1px solid var(--border-black); }
+
+/* 無障礙高對比 Focus 狀態 (Accessibility Requirement) */
+:focus-visible {
+  outline: 3px solid var(--fg-black) !important;
+  outline-offset: 3px !important;
+}
+
+/* 跑馬燈走字 (Infinite Marquee Ticker) */
+.marquee-strip {
+  background: var(--fg-black);
+  color: var(--bg-white);
+  padding: 8px 0;
+  overflow: hidden;
+  white-space: nowrap;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  border-bottom: 2px solid var(--fg-black);
+}
+
+.marquee-content {
+  display: inline-block;
+  animation: marquee 25s linear infinite;
+}
+
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+/* 十字準星跟隨器 */
+.crosshair-cursor {
+  position: fixed;
+  width: 20px;
+  height: 20px;
+  pointer-events: none;
+  z-index: 9999;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.crosshair-cursor::before, .crosshair-cursor::after {
+  content: '';
+  position: absolute;
+  background: var(--fg-black);
+}
+
+.crosshair-cursor::before { width: 100%; height: 1px; }
+.crosshair-cursor::after { width: 1px; height: 100%; }
+
+.crosshair-label {
+  position: fixed;
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  background: var(--fg-black);
+  color: var(--bg-white);
+  padding: 2px 6px;
+  pointer-events: none;
+  z-index: 9999;
+  transform: translate(12px, 12px);
+}
+
+/* 導覽列 */
+.mono-navbar {
+  background: var(--bg-white);
+  border-bottom: 2px solid var(--fg-black);
+  position: sticky;
+  top: 0;
+  z-index: 500;
+}
+
+.nav-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 32px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.mono-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-family: var(--font-mono);
+  font-weight: 800;
+  font-size: 0.95rem;
+  letter-spacing: 1px;
+}
+
+.mono-square {
+  width: 12px;
+  height: 12px;
+  background: var(--fg-black);
+}
+
+.mono-nav-links {
+  display: flex;
+  gap: 28px;
+}
+
+.mono-nav-links a {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--fg-black);
+  text-decoration: none;
+  transition: var(--transition-instant);
+}
+
+.mono-nav-links a:hover {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+/* 按鈕系統 */
+.mono-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 28px;
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  text-decoration: none;
+  cursor: pointer;
+  transition: var(--transition-instant);
+}
+
+.btn-primary {
+  background: var(--fg-black);
+  color: var(--bg-white);
+  border: 2px solid var(--fg-black);
+}
+
+.btn-primary:hover {
+  background: var(--bg-white);
+  color: var(--fg-black);
+}
+
+.btn-outline {
+  background: transparent;
+  color: var(--fg-black);
+  border: 2px solid var(--fg-black);
+}
+
+.btn-outline:hover {
+  background: var(--fg-black);
+  color: var(--bg-white);
+}
+
+.btn-large {
+  padding: 16px 36px;
+  font-size: 0.95rem;
+}
+
+/* 第一幕 HERO 區塊 */
+.hero-mono-section {
+  padding: 80px 0;
+}
+
+.mono-meta-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+
+.mono-label {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  color: var(--fg-muted);
+}
+
+.display-headline {
+  font-family: var(--font-display);
+  font-size: 6.5rem;
+  font-weight: 900;
+  line-height: 0.95;
+  letter-spacing: -2px;
+  margin-bottom: 48px;
+  display: flex;
+  flex-direction: column;
+}
+
+.italic-serif {
+  font-style: italic;
+  font-weight: 400;
+}
+
+.hero-split-grid {
+  display: grid;
+  grid-template-columns: 1.2fr 0.8fr;
+  gap: 60px;
+  align-items: start;
+}
+
+.sub-serif-headline {
+  font-family: var(--font-display);
+  font-size: 2.2rem;
+  margin-bottom: 16px;
+}
+
+.body-serif-text {
+  font-family: var(--font-body);
+  font-size: 1.15rem;
+  color: var(--fg-muted);
+  margin-bottom: 28px;
+  line-height: 1.7;
+}
+
+.quote-editorial-box {
+  border-left: 4px solid var(--fg-black);
+  padding: 16px 24px;
+  margin-bottom: 32px;
+  background: var(--bg-muted);
+}
+
+.quote-text {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-style: italic;
+  color: var(--fg-black);
+}
+
+.hero-cta-group {
+  display: flex;
+  gap: 16px;
+}
+
+/* 右側實體編輯風卡片 */
+.editorial-card-wrapper {
+  background: var(--bg-white);
+  padding: 24px;
+}
+
+.card-tag-header {
+  display: flex;
+  justify-content: space-between;
+  padding-bottom: 12px;
+  margin-bottom: 24px;
+}
+
+.big-initial {
+  font-family: var(--font-display);
+  font-size: 8rem;
+  font-weight: 900;
+  line-height: 0.8;
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.card-details {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  margin-bottom: 24px;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+}
+
+.detail-row .key { color: var(--fg-muted); }
+
+.card-footer-bar {
+  display: flex;
+  justify-content: space-between;
+  padding-top: 12px;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--fg-muted);
+}
+
+/* 橫幅大字體標語 */
+.banner-statement {
+  padding: 24px 0;
+  text-align: center;
+  background-color: var(--fg-black);
+  color: var(--bg-white);
+}
+
+.banner-text {
+  font-family: var(--font-mono);
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: 3px;
+}
+
+/* 通用區塊 */
+.section-mono {
+  padding: 100px 0;
+}
+
+.section-title-wrapper {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  padding-bottom: 16px;
+  margin-bottom: 60px;
+}
+
+.section-number {
+  font-family: var(--font-mono);
+  font-size: 1.2rem;
+  font-weight: 800;
+}
+
+.section-heading-serif {
+  font-family: var(--font-display);
+  font-size: 2.8rem;
+  font-weight: 800;
+  letter-spacing: -1px;
+}
+
+/* 第二幕 ABOUT 卡片 Grid */
+.about-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 32px;
+}
+
+.mono-card {
+  padding: 36px 28px;
+  background: var(--bg-white);
+  transition: var(--transition-instant);
+}
+
+.mono-card:hover {
+  background: var(--fg-black);
+  color: var(--bg-white);
+}
+
+.mono-card:hover .card-num,
+.mono-card:hover .card-heading-serif,
+.mono-card:hover .card-body-text {
+  color: var(--bg-white);
+}
+
+.card-num {
+  font-family: var(--font-mono);
+  font-size: 1.4rem;
+  font-weight: 800;
+  margin-bottom: 20px;
+  display: block;
+}
+
+.card-heading-serif {
+  font-family: var(--font-display);
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin-bottom: 16px;
+}
+
+.card-body-text {
+  font-family: var(--font-body);
+  font-size: 1.05rem;
+  color: var(--fg-muted);
+}
+
+/* 第三幕 反轉區塊 (INVERTED BLACK SECTION) */
+.section-inverted {
+  background: var(--fg-black);
+  color: var(--bg-white);
+}
+
+.section-number-inverted {
+  font-family: var(--font-mono);
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: var(--bg-white);
+}
+
+.section-heading-serif-inverted {
+  font-family: var(--font-display);
+  font-size: 2.8rem;
+  font-weight: 800;
+  color: var(--bg-white);
+}
+
+.border-bottom-medium-inverted {
+  border-bottom: 2px solid var(--bg-white);
+}
+
+.skills-mono-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 32px;
+}
+
+.mono-card-inverted {
+  padding: 32px;
+  background: var(--fg-black);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  transition: var(--transition-instant);
+}
+
+.mono-card-inverted:hover {
+  background: var(--bg-white);
+  color: var(--fg-black);
+  border-color: var(--bg-white);
+}
+
+.mono-card-inverted:hover .metric-label,
+.mono-card-inverted:hover .metric-val,
+.mono-card-inverted:hover .metric-title-serif,
+.mono-card-inverted:hover .metric-body {
+  color: var(--fg-black);
+}
+
+.mono-card-inverted:hover .rule-line-fill {
+  background: var(--fg-black);
+}
+
+.metric-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: var(--font-mono);
+  margin-bottom: 16px;
+}
+
+.metric-label { font-size: 0.75rem; color: rgba(255, 255, 255, 0.7); }
+.metric-val { font-size: 2rem; font-weight: 800; }
+.metric-title-serif { font-family: var(--font-display); font-size: 1.5rem; margin-bottom: 12px; }
+.metric-body { font-family: var(--font-body); font-size: 0.95rem; color: rgba(255, 255, 255, 0.8); margin-bottom: 20px; }
+
+.rule-line-fill {
+  height: 4px;
+  background: var(--bg-white);
+  width: 0%;
+  transition: width 1.2s cubic-bezier(0.1, 0.8, 0.3, 1);
+}
+
+/* 第四幕 任務清單 (Missions Editorial List) */
+.missions-editorial-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.mission-row {
+  display: grid;
+  grid-template-columns: 140px 240px 1fr;
+  padding: 28px 20px;
+  align-items: center;
+  transition: var(--transition-instant);
+}
+
+.hover-invert:hover {
+  background: var(--fg-black);
+  color: var(--bg-white);
+}
+
+.hover-invert:hover .m-code,
+.hover-invert:hover .m-title,
+.hover-invert:hover .m-desc {
+  color: var(--bg-white);
+}
+
+.m-code { font-family: var(--font-mono); font-size: 0.85rem; font-weight: 800; }
+.m-title { font-family: var(--font-display); font-size: 1.5rem; font-weight: 700; }
+.m-desc { font-family: var(--font-body); font-size: 1.05rem; color: var(--fg-muted); }
+
+.final-row { padding: 36px 20px; }
+.final-code { color: var(--fg-black); font-weight: 900; }
+
+/* 第五幕 表單與通行證 (Student Login) */
+.mono-form-wrapper {
+  padding: 48px;
+  background: var(--bg-white);
+}
+
+.form-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+}
+
+.mono-form-group {
+  margin-bottom: 28px;
+}
+
+.mono-form-group label {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+.req { color: var(--fg-black); font-weight: bold; }
+
+.mono-input, .mono-select {
+  width: 100%;
+  padding: 14px 16px;
+  border: none;
+  border-bottom: 2px solid var(--border-black);
+  font-family: var(--font-mono);
+  font-size: 0.95rem;
+  background: var(--bg-white);
+  color: var(--fg-black);
+  transition: var(--transition-instant);
+}
+
+.mono-input:focus, .mono-select:focus {
+  border-bottom-width: 4px;
+}
+
+.mono-checkbox-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.mono-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--border-black);
+  padding: 10px 18px;
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: var(--transition-instant);
+}
+
+.mono-chip:hover {
+  background: var(--fg-black);
+  color: var(--bg-white);
+}
+
+.mono-chip:has(input:checked) {
+  background: var(--fg-black);
+  color: var(--bg-white);
+  font-weight: 700;
+}
+
+.form-action-center {
+  text-align: center;
+  margin-top: 36px;
+}
+
+/* 生成之黑白實體卡片 */
+.mono-pass-result {
+  margin-top: 48px;
+}
+
+.pass-box {
+  background: var(--bg-white);
+  padding: 32px;
+  margin-bottom: 24px;
+}
+
+.pass-top-bar {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--font-mono);
+  font-weight: 800;
+  font-size: 0.85rem;
+  padding-bottom: 14px;
+  margin-bottom: 24px;
+}
+
+.pass-inner-grid {
+  display: grid;
+  grid-template-columns: 110px 1fr;
+  gap: 32px;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.pass-photo-box {
+  width: 110px;
+  height: 110px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-size: 4rem;
+  font-weight: 900;
+  background: var(--fg-black);
+  color: var(--bg-white);
+}
+
+.pass-details-list {
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.pass-bot-bar {
+  display: flex;
+  justify-content: space-between;
+  padding-top: 14px;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+}
+
+.pass-btn-group {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+}
+
+.mono-footer {
+  background: var(--fg-black);
+  color: var(--bg-white);
+  padding: 60px 0;
+}
+
+.footer-grid {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.footer-left h3 {
+  font-family: var(--font-mono);
+  font-size: 1.1rem;
+  margin-bottom: 6px;
+}
+
+.footer-left p {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--border-light);
+}
+
+.font-mono { font-family: var(--font-mono); font-size: 0.8rem; }
+
+/* 響應式佈局微調 */
+@media (max-width: 768px) {
+  .display-headline { font-size: 3.8rem; }
+  .hero-split-grid { grid-template-columns: 1fr; }
+  .mission-row { grid-template-columns: 1fr; gap: 8px; }
+  .form-grid-2 { grid-template-columns: 1fr; }
+  .pass-inner-grid { grid-template-columns: 1fr; text-align: center; }
+  .pass-photo-box { margin: 0 auto; }
+}
+
+@media print {
+  body * { visibility: hidden; }
+  #printable-pass, #printable-pass * { visibility: visible; }
+  #printable-pass { position: absolute; left: 0; top: 0; width: 100%; }
+}

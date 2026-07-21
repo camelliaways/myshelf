@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ZHUO // MINIMALIST MONOCHROME PROFILE</title>
+  <meta name="description" content="卓老師資訊科技課程極簡黑白雜誌風個人介紹頁面。">
+
+  <!-- Google Fonts: Playfair Display + Source Serif 4 + JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&family=Playfair+Display:ital,wght@0,600;0,800;0,900;1,400;1,700;1,900&family=Source+Serif+4:ital,wght@0,400;0,600;0,700;1,400&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="monochrome.css">
+</head>
+<body class="bg-noise-pattern">
+
+  <!-- 十字準星游標跟隨器 -->
+  <div id="crosshair-cursor" class="crosshair-cursor"></div>
+  <div id="crosshair-label" class="crosshair-label">COORD [0,0]</div>
+
+  <!-- 頂部跑馬燈公告條 -->
+  <div class="marquee-strip">
+    <div class="marquee-content">
+      <span>NEW PLAYER LOGGED IN — MR. ZHUO — KWJH INFO CS 8 — DESIGN x FRONTEND — BEHANCE.NET/SYUANCHO — PURE MONOCHROME RESTRAINT — </span>
+      <span>NEW PLAYER LOGGED IN — MR. ZHUO — KWJH INFO CS 8 — DESIGN x FRONTEND — BEHANCE.NET/SYUANCHO — PURE MONOCHROME RESTRAINT — </span>
+    </div>
+  </div>
+
+  <!-- 頂部經典導覽列 -->
+  <header class="mono-navbar">
+    <div class="nav-inner">
+      <div class="mono-brand">
+        <span class="mono-square"></span>
+        <span class="brand-text">ZHUO / EDITORIAL</span>
+      </div>
+      <nav class="mono-nav-links">
+        <a href="#hero">01 // HERO</a>
+        <a href="#about">02 // ABOUT</a>
+        <a href="#skills">03 // SKILLS</a>
+        <a href="#missions">04 // MISSIONS</a>
+        <a href="#student">05 // LOGIN</a>
+      </nav>
+      <div class="mono-nav-cta">
+        <a href="https://www.behance.net/syuanCho" target="_blank" rel="noopener noreferrer" class="mono-btn btn-outline" title="BEHANCE PORTFOLIO" style="margin-right: 8px;">BEHANCE ↗</a>
+        <a href="#student" class="mono-btn btn-primary">ENTER SERVER &rarr;</a>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- 第一幕：HERO 區塊 -->
+    <section id="hero" class="hero-mono-section border-bottom-thick">
+      <div class="container">
+        <div class="mono-meta-header">
+          <span class="mono-label">[ VOL. 2026 // EDITION 08 ]</span>
+          <span class="mono-label">KWJH CS DEPARTMENT</span>
+        </div>
+
+        <h1 class="display-headline text-reveal">
+          <span class="line-1">NEW PLAYER</span>
+          <span class="line-2 italic-serif">HAS LOGGED IN.</span>
+        </h1>
+
+        <div class="hero-split-grid">
+          <div class="hero-left-text">
+            <h2 class="sub-serif-headline">我是卓老師。</h2>
+            <p class="body-serif-text">
+              曾經是 UI/UX 介面設計師與前端開發工程師，後來跑進教室，研究怎麼把資訊課變成可以看懂、動手做，甚至有點好玩的事。
+            </p>
+            <div class="quote-editorial-box">
+              <p class="quote-text">
+                &ldquo;這學期我不只教你按哪個按鈕。我們會一起練習拆解問題、控制程式，做出一個帶有你獨特想法的作品。&rdquo;
+              </p>
+            </div>
+            <div class="hero-cta-group">
+              <a href="https://www.behance.net/syuanCho" target="_blank" rel="noopener noreferrer" class="mono-btn btn-primary">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" style="margin-right:6px;"><path d="M22 7h-7V5h7v2zm-1.6 4c-1.3 0-2.4 1-2.4 2.8 0 1.9 1.1 2.8 2.5 2.8 1.1 0 2.1-.6 2.4-1.6h2.1c-.5 2.1-2.3 3.3-4.5 3.3-3.1 0-5.1-2.1-5.1-5.4 0-3.2 2-5.4 5.1-5.4 3 0 4.8 2.1 4.8 5.1v.7h-4.9zm0-1.8c.9 0 1.6.5 1.7 1.4h-3.4c.1-.9.8-1.4 1.7-1.4zM7.2 13.7H3.6v3.1h3.7c1 0 1.7-.5 1.7-1.5 0-1.1-.7-1.6-1.8-1.6zm-3.6-5.4v2.7h3.3c.9 0 1.5-.4 1.5-1.3 0-.9-.6-1.4-1.5-1.4H3.6zM0 5h7.6c2.4 0 3.9 1.1 3.9 2.7 0 1.2-.6 2.1-1.6 2.5 1.3.4 2.1 1.4 2.1 2.8 0 2-1.7 3.3-4.3 3.3H0V5z"/></svg>
+                BEHANCE PORTFOLIO ↗
+              </a>
+              <a href="#student" class="mono-btn btn-outline">REGISTER PASS</a>
+            </div>
+          </div>
+
+          <div class="hero-right-card">
+            <div class="editorial-card-wrapper border-medium">
+              <div class="card-tag-header border-bottom-thin">
+                <span class="mono-label">IDENTITY CARD</span>
+                <span class="mono-label">ACTIVE</span>
+              </div>
+              <div class="card-main-content">
+                <div class="big-initial">Z</div>
+                <div class="card-details">
+                  <div class="detail-row">
+                    <span class="key">ROLE:</span>
+                    <span class="val font-bold">資訊科技教師</span>
+                  </div>
+                  <div class="detail-row">
+                    <span class="key">FOCUS:</span>
+                    <span class="val">視覺設計 / 前端開發</span>
+                  </div>
+                  <div class="detail-row">
+                    <span class="key">PORTFOLIO:</span>
+                    <span class="val"><a href="https://www.behance.net/syuanCho" target="_blank" rel="noopener noreferrer" style="color:var(--fg-black); font-weight:700;">behance.net/syuanCho ↗</a></span>
+                  </div>
+                </div>
+              </div>
+              <div class="card-footer-bar border-top-thin">
+                <span>SEMESTER: 2026-SPRING</span>
+                <span>KWJH-8</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 超大單行滿版橫幅 -->
+    <div class="banner-statement border-bottom-thick bg-lines-pattern">
+      <div class="container">
+        <p class="banner-text">RESTRAINT IS THE ULTIMATE FORM OF EXPRESSION.</p>
+      </div>
+    </div>
+
+    <!-- 第二幕：簡約經歷 (ABOUT ME) -->
+    <section id="about" class="section-mono border-bottom-thick">
+      <div class="container">
+        <div class="section-title-wrapper border-bottom-medium">
+          <span class="section-number">02 /</span>
+          <h2 class="section-heading-serif">ABOUT THE TEACHER</h2>
+        </div>
+
+        <div class="about-cards-grid">
+          <div class="mono-card border-thin draw-line-on-scroll">
+            <span class="card-num">01.</span>
+            <h3 class="card-heading-serif">設計 x 前端背景</h3>
+            <p class="card-body-text">
+              進入學校前，長期專注於介面設計與前端網頁開發。重視視覺排版與內容層次，能帶領學生做出賞心悅目的成果。
+            </p>
+          </div>
+
+          <div class="mono-card border-thin draw-line-on-scroll">
+            <span class="card-num">02.</span>
+            <h3 class="card-heading-serif">個人視覺作品集</h3>
+            <p class="card-body-text">
+              累積豐富的視覺創作、介面設計與品牌專案。歡迎瀏覽 <a href="https://www.behance.net/syuanCho" target="_blank" rel="noopener noreferrer" style="color:inherit; font-weight:700; text-decoration:underline;">Behance 作品集 ↗</a> 觀看老師過去的作品！
+            </p>
+          </div>
+
+          <div class="mono-card border-thin draw-line-on-scroll">
+            <span class="card-num">03.</span>
+            <h3 class="card-heading-serif">AI 協作與創客教學</h3>
+            <p class="card-body-text">
+              善用 AI 輔助開發與教學。主張將 AI 視為最強助教，培養學生運用科技解決日常生活真實問題的能力。
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 第三幕：技能指標 (SKILL ATTRIBUTES - INVERTED SECTION) -->
+    <section id="skills" class="section-mono section-inverted border-bottom-thick">
+      <div class="container">
+        <div class="section-title-wrapper border-bottom-medium-inverted">
+          <span class="section-number-inverted">03 /</span>
+          <h2 class="section-heading-serif-inverted">SKILL METRICS & ATTITUDES</h2>
+        </div>
+
+        <div class="skills-mono-grid">
+          <!-- 技能卡片 1 -->
+          <div class="mono-card-inverted border-thin-inverted">
+            <div class="metric-header">
+              <span class="metric-label">DESIGN & VISUAL</span>
+              <span class="metric-val counter-num" data-target="98">0</span>%
+            </div>
+            <h3 class="metric-title-serif">設計視覺與排版</h3>
+            <p class="metric-body">把複雜難懂的邏輯，整理成清晰優雅的畫面。科技應該是美觀且易用的。</p>
+            <div class="rule-line-fill" data-width="98%"></div>
+          </div>
+
+          <!-- 技能卡片 2 -->
+          <div class="mono-card-inverted border-thin-inverted">
+            <div class="metric-header">
+              <span class="metric-label">CODE & DEBUG</span>
+              <span class="metric-val counter-num" data-target="95">0</span>%
+            </div>
+            <h3 class="metric-title-serif">程式邏輯與除錯</h3>
+            <p class="metric-body">我不一定一次就寫對，但我知道怎麼找出問題。寫錯程式絕不是丟臉的事。</p>
+            <div class="rule-line-fill" data-width="95%"></div>
+          </div>
+
+          <!-- 技能卡片 3 -->
+          <div class="mono-card-inverted border-thin-inverted">
+            <div class="metric-header">
+              <span class="metric-label">CONCEPT & TEACHING</span>
+              <span class="metric-val counter-num" data-target="100">0</span>%
+            </div>
+            <div class="metric-title-serif">觀念理解與引導</div>
+            <p class="metric-body">不死記按鈕步驟，而是理解背後原理。理解為什麼這樣做比抄答案重要。</p>
+            <div class="rule-line-fill" data-width="100%"></div>
+          </div>
+
+          <!-- 技能卡片 4 -->
+          <div class="mono-card-inverted border-thin-inverted">
+            <div class="metric-header">
+              <span class="metric-label">AI CO-CREATION</span>
+              <span class="metric-val counter-num" data-target="99">0</span>%
+            </div>
+            <h3 class="metric-title-serif">AI 協作與創造</h3>
+            <p class="metric-body">把 AI 當成最強助教而非代筆者，用科技實現原本單靠個人做不到的想法。</p>
+            <div class="rule-line-fill" data-width="99%"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 第四幕：學期任務 (CURRICULUM MISSIONS) -->
+    <section id="missions" class="section-mono border-bottom-thick">
+      <div class="container">
+        <div class="section-title-wrapper border-bottom-medium">
+          <span class="section-number">04 /</span>
+          <h2 class="section-heading-serif">SEMESTER MISSIONS</h2>
+        </div>
+
+        <div class="missions-editorial-list">
+          <div class="mission-row border-bottom-thin hover-invert">
+            <span class="m-code">QUEST 01</span>
+            <h3 class="m-title">辨識資訊</h3>
+            <p class="m-desc">驗證資料來源、辨別網路真偽與分析數位風險。</p>
+          </div>
+
+          <div class="mission-row border-bottom-thin hover-invert">
+            <span class="m-code">QUEST 02</span>
+            <h3 class="m-title">拆解問題</h3>
+            <p class="m-desc">把複雜的任務，拆解成電腦與人類都能理解的步驟。</p>
+          </div>
+
+          <div class="mission-row border-bottom-thin hover-invert">
+            <span class="m-code">QUEST 03</span>
+            <h3 class="m-title">控制程式</h3>
+            <p class="m-desc">運用條件判斷、變數與清單，讓程式按你的想法執行。</p>
+          </div>
+
+          <div class="mission-row border-bottom-thin hover-invert">
+            <span class="m-code">QUEST 04</span>
+            <h3 class="m-title">建立作品</h3>
+            <p class="m-desc">不只是做範例，而是產出帶有你獨特創意的專題成果。</p>
+          </div>
+
+          <div class="mission-row final-row border-medium hover-invert">
+            <span class="m-code final-code">FINAL QUEST</span>
+            <h3 class="m-title">用科技解決一個問題</h3>
+            <p class="m-desc">最後的作品必須能回答：「你為什麼要做這個？它幫誰解決了什麼問題？」</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 第五幕：學生玩家登記表單 (STUDENT LOGIN) -->
+    <section id="student" class="section-mono border-bottom-thick">
+      <div class="container">
+        <div class="section-title-wrapper border-bottom-medium">
+          <span class="section-number">05 /</span>
+          <h2 class="section-heading-serif">CREATE PLAYER PASS</h2>
+        </div>
+
+        <div class="mono-form-wrapper border-medium">
+          <form id="mono-player-form" onsubmit="return false;">
+            <div class="form-grid-2">
+              <div class="mono-form-group">
+                <label for="m-name">玩家暱稱 / NAME <span class="req">*</span></label>
+                <input type="text" id="m-name" class="mono-input" placeholder="例如：Alex / 小明" required>
+              </div>
+
+              <div class="mono-form-group">
+                <label for="m-class">班級座號 / CLASS & SEAT <span class="req">*</span></label>
+                <input type="text" id="m-class" class="mono-input" placeholder="例如：801 15號" required>
+              </div>
+            </div>
+
+            <div class="mono-form-group">
+              <label for="m-usage">使用電腦主要習慣</label>
+              <select id="m-usage" class="mono-select">
+                <option value="看影片 / 聽音樂">看影片 / 聽音樂</option>
+                <option value="打遊戲 / 電競">打遊戲 / 電競</option>
+                <option value="繪圖 / 創作者">繪圖 / 創作者</option>
+                <option value="做報告 / 學習">做報告 / 學習</option>
+                <option value="寫程式 / 探索科技">寫程式 / 探索科技</option>
+              </select>
+            </div>
+
+            <div class="mono-form-group">
+              <label>曾經學過的資訊工具（可多選）</label>
+              <div class="mono-checkbox-group">
+                <label class="mono-chip"><input type="checkbox" name="m-tools" value="Scratch"> Scratch</label>
+                <label class="mono-chip"><input type="checkbox" name="m-tools" value="Canva"> Canva 簡報</label>
+                <label class="mono-chip"><input type="checkbox" name="m-tools" value="Python"> Python</label>
+                <label class="mono-chip"><input type="checkbox" name="m-tools" value="Micro:bit"> Micro:bit</label>
+                <label class="mono-chip"><input type="checkbox" name="m-tools" value="ChatGPT / AI"> ChatGPT / AI</label>
+              </div>
+            </div>
+
+            <div class="mono-form-group">
+              <label for="m-wish">這學期最想做出什麼？</label>
+              <input type="text" id="m-wish" class="mono-input" placeholder="例如：做一個小遊戲、學會剪輯、搞懂 AI...">
+            </div>
+
+            <div class="form-action-center">
+              <button type="submit" id="generate-pass-btn" class="mono-btn btn-primary btn-large">
+                GENERATE PLAYER PASS &rarr;
+              </button>
+            </div>
+          </form>
+
+          <!-- 生成之黑白實體風格通行證 -->
+          <div id="mono-pass-result" class="mono-pass-result" style="display:none;">
+            <div class="pass-box border-thick" id="printable-pass">
+              <div class="pass-top-bar border-bottom-thin">
+                <span>KWJH INFO CS 8 // PLAYER PASS</span>
+                <span class="pass-badge-label">[ VERIFIED ]</span>
+              </div>
+              <div class="pass-inner-grid">
+                <div class="pass-photo-box border-thin">
+                  <span id="pass-char">P</span>
+                </div>
+                <div class="pass-details-list">
+                  <p><strong>NAME:</strong> <span id="res-name">--</span></p>
+                  <p><strong>CLASS:</strong> <span id="res-class">--</span></p>
+                  <p><strong>USAGE:</strong> <span id="res-usage">--</span></p>
+                  <p><strong>TOOLS:</strong> <span id="res-tools">--</span></p>
+                  <p><strong>WISH:</strong> <span id="res-wish">--</span></p>
+                </div>
+              </div>
+              <div class="pass-bot-bar border-top-thin">
+                <span>INSTRUCTOR: MR. ZHUO // PORTFOLIO: BEHANCE.NET/SYUANCHO</span>
+                <span class="barcode">||||| ||| |||||| ||||</span>
+              </div>
+            </div>
+
+            <div class="pass-btn-group">
+              <button id="print-mono-btn" class="mono-btn btn-primary">PRINT / SAVE PASS</button>
+              <button id="edit-mono-btn" class="mono-btn btn-outline">EDIT DATA</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="mono-footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-left">
+          <h3>ZHUO / EDITORIAL</h3>
+          <p>© 2026 KWJH INFO TECH DEPARTMENT. ALL RIGHTS RESERVED. 
+            ‧ <a href="https://www.behance.net/syuanCho" target="_blank" rel="noopener noreferrer" style="color:var(--bg-white);">Behance 作品集 ↗</a>
+          </p>
+        </div>
+        <div class="footer-right">
+          <p class="font-mono">STYLE: MINIMALIST MONOCHROME</p>
+          <p class="font-mono">DESIGN RESTRAINT x HIGH CONTRAST</p>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script src="monochrome.js"></script>
+</body>
+</html>
