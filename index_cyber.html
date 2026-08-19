@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>新玩家已登入 | 光武國中 8年級資訊課 - 卓老師</title>
+  <meta name="description" content="光武國中 8 年級資訊科技課程導引網站。新玩家已登入：卓老師，帶領你探索科技、拆解問題與建立屬於你的作品！">
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@500;700&family=Noto+Sans+TC:wght@400;500;700;900&family=Plus+Jakarta+Sans:wght@600;800;900&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- 互動動態 Canvas 粒子背景 -->
+  <canvas id="bg-canvas"></canvas>
+
+  <!-- 頂部導覽列 -->
+  <header class="navbar">
+    <div class="nav-container">
+      <div class="brand-logo">
+        <span class="status-dot online"></span>
+        <span class="brand-title">SERVER :: KWJH-INFO-8</span>
+      </div>
+      <nav class="nav-links">
+        <a href="#hero">首頁</a>
+        <a href="#act-achieve">經歷檔案</a>
+        <a href="#act-skills">技能數值</a>
+        <a href="#act-missions">學期任務</a>
+        <a href="#act-manual">使用說明書</a>
+        <a href="https://www.behance.net/syuanCho" target="_blank" rel="noopener noreferrer" class="behance-nav-btn" title="瀏覽 Behance 個人作品集">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M22 7h-7V5h7v2zm-1.6 4c-1.3 0-2.4 1-2.4 2.8 0 1.9 1.1 2.8 2.5 2.8 1.1 0 2.1-.6 2.4-1.6h2.1c-.5 2.1-2.3 3.3-4.5 3.3-3.1 0-5.1-2.1-5.1-5.4 0-3.2 2-5.4 5.1-5.4 3 0 4.8 2.1 4.8 5.1v.7h-4.9zm0-1.8c.9 0 1.6.5 1.7 1.4h-3.4c.1-.9.8-1.4 1.7-1.4zM7.2 13.7H3.6v3.1h3.7c1 0 1.7-.5 1.7-1.5 0-1.1-.7-1.6-1.8-1.6zm-3.6-5.4v2.7h3.3c.9 0 1.5-.4 1.5-1.3 0-.9-.6-1.4-1.5-1.4H3.6zM0 5h7.6c2.4 0 3.9 1.1 3.9 2.7 0 1.2-.6 2.1-1.6 2.5 1.3.4 2.1 1.4 2.1 2.8 0 2-1.7 3.3-4.3 3.3H0V5z"/></svg>
+          Behance 作品集
+        </a>
+        <a href="#act-student" class="nav-btn glowing-btn">建立玩家資料</a>
+      </nav>
+      <button id="sound-toggle" class="sound-btn" aria-label="切換音效">
+        <svg id="sound-icon-on" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 5L6 9H2v6h4l5 4V5z"></path><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
+        <svg id="sound-icon-off" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" style="display:none;"><path d="M11 5L6 9H2v6h4l5 4V5z"></path><line x1="23" y1="9" x2="17" y2="15"></line><line x1="17" y1="9" x2="23" y2="15"></line></svg>
+      </button>
+    </div>
+  </header>
+
+  <main>
+    <!-- 第一幕：英雄區塊 -->
+    <section id="hero" class="section hero-section">
+      <div class="container hero-grid">
+        <div class="hero-content">
+          <div class="tag-badge glowing-badge">
+            <span class="badge-icon">⚡</span> NEW PLAYER CONNECTED
+          </div>
+          <h1 class="hero-title">
+            <span class="sub-welcome">新玩家已登入</span>
+            <span class="player-name gradient-text">卓老師</span>
+          </h1>
+          <p class="hero-subtitle">
+            <span id="typewriter-text"></span><span class="cursor">|</span>
+          </p>
+          <div class="hero-quote-box tilt-element">
+            <p>「這學期，我不打算只教你按哪個按鈕。我們會一起練習拆解問題、判斷資訊、控制程式，也嘗試做出一個真正屬於自己的作品。」</p>
+          </div>
+          <div class="hero-actions">
+            <a href="https://www.behance.net/syuanCho" target="_blank" rel="noopener noreferrer" class="btn btn-primary glowing-btn-large">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M22 7h-7V5h7v2zm-1.6 4c-1.3 0-2.4 1-2.4 2.8 0 1.9 1.1 2.8 2.5 2.8 1.1 0 2.1-.6 2.4-1.6h2.1c-.5 2.1-2.3 3.3-4.5 3.3-3.1 0-5.1-2.1-5.1-5.4 0-3.2 2-5.4 5.1-5.4 3 0 4.8 2.1 4.8 5.1v.7h-4.9zm0-1.8c.9 0 1.6.5 1.7 1.4h-3.4c.1-.9.8-1.4 1.7-1.4zM7.2 13.7H3.6v3.1h3.7c1 0 1.7-.5 1.7-1.5 0-1.1-.7-1.6-1.8-1.6zm-3.6-5.4v2.7h3.3c.9 0 1.5-.4 1.5-1.3 0-.9-.6-1.4-1.5-1.4H3.6zM0 5h7.6c2.4 0 3.9 1.1 3.9 2.7 0 1.2-.6 2.1-1.6 2.5 1.3.4 2.1 1.4 2.1 2.8 0 2-1.7 3.3-4.3 3.3H0V5z"/></svg>
+              觀看 Behance 作品集
+            </a>
+            <a href="#act-student" class="btn btn-outline neon-border">
+              建立學生登入檔案
+            </a>
+          </div>
+        </div>
+
+        <!-- 3D 浮動卡片展示區 -->
+        <div class="hero-visual">
+          <div class="avatar-card glass-card tilt-element" id="hero-tilt-card">
+            <div class="avatar-header">
+              <div class="window-controls">
+                <span class="dot red"></span>
+                <span class="dot yellow"></span>
+                <span class="dot green"></span>
+              </div>
+              <span class="window-title">PLAYER_CARD_V2.0</span>
+            </div>
+            <div class="avatar-body">
+              <div class="avatar-frame avatar-glow">
+                <div class="avatar-illustration">
+                  <div class="head"></div>
+                  <div class="glasses"></div>
+                  <div class="smile"></div>
+                  <div class="laptop-icon">💻</div>
+                </div>
+              </div>
+              <div class="player-info-meta">
+                <h3 class="player-title">卓老師 (Mr. Zhuo)</h3>
+                <span class="role-badge">DESIGN & FRONTEND DEV</span>
+              </div>
+              <div class="player-stats-mini">
+                <div class="stat-row">
+                  <span class="label">身分:</span>
+                  <span class="val highlight">光武國中 資訊科技教師</span>
+                </div>
+                <div class="stat-row">
+                  <span class="label">作品集:</span>
+                  <span class="val"><a href="https://www.behance.net/syuanCho" target="_blank" rel="noopener noreferrer" class="link-highlight">behance.net/syuanCho ↗</a></span>
+                </div>
+                <div class="stat-row">
+                  <span class="label">專長:</span>
+                  <span class="val">介面設計 / 前端開發 / AI應用</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 第二幕：真實經歷檔案 -->
+    <section id="act-achieve" class="section achieve-section">
+      <div class="container">
+        <div class="section-header text-center">
+          <span class="section-tag">ACT II :: PLAYER PROFILE & ACHIEVEMENTS</span>
+          <h2 class="section-title">關於卓老師：經歷與背景解鎖</h2>
+          <p class="section-desc">直接了解老師的真實背景，看他是如何從設計、工程師一路走進國中教室！</p>
+        </div>
+
+        <div class="achieve-grid">
+          <!-- 經歷卡片 1 -->
+          <div class="achieve-card glass-card tilt-element">
+            <div class="achieve-badge legendary">LEGENDARY UNLOCKED</div>
+            <div class="achieve-icon">🎨</div>
+            <h3>前 網頁設計與前端開發者</h3>
+            <p>進入學校前，長期從事 UI/UX 介面設計與前端開發（Frontend Coding）。因此我們課堂上的成果，都會教你做成最帥氣、最美觀的視覺介面！</p>
+          </div>
+
+          <!-- 經歷卡片 2 -->
+          <div class="achieve-card glass-card tilt-element">
+            <div class="achieve-badge epic">EPIC UNLOCKED</div>
+            <div class="achieve-icon">🖼️</div>
+            <h3>線上個人設計作品集</h3>
+            <p>累積豐富的視覺創作、介面設計與品牌專案經驗。歡迎瀏覽 <a href="https://www.behance.net/syuanCho" target="_blank" rel="noopener noreferrer" class="text-link">Behance 作品集 ↗</a> 觀看老師過去的作品！</p>
+          </div>
+
+          <!-- 經歷卡片 3 -->
+          <div class="achieve-card glass-card tilt-element">
+            <div class="achieve-badge master">MASTER UNLOCKED</div>
+            <div class="achieve-icon">🤖</div>
+            <h3>AI 協作與程式教學實務</h3>
+            <p>熟練使用 AI 協助寫程式與處理工作。在課堂上會教你如何把 AI 當成最強助教，而不是只會幫你抄答案的機器。</p>
+          </div>
+
+          <!-- 經歷卡片 4 -->
+          <div class="achieve-card glass-card tilt-element">
+            <div class="achieve-badge legendary">LEGENDARY UNLOCKED</div>
+            <div class="achieve-icon">🧩</div>
+            <h3>遊戲化與創客專題體驗</h3>
+            <p>擁有豐富的 Scratch、遊戲開發與創客教學經驗。擅長把難懂的程式邏輯，轉化為直覺好玩的闖關體驗！</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 第三幕：技能數值與指標 -->
+    <section id="act-skills" class="section skills-section">
+      <div class="container">
+        <div class="section-header text-center">
+          <span class="section-tag">ACT III :: SKILL ATTRIBUTES</span>
+          <h2 class="section-title">我的技能配置與教學態度</h2>
+          <p class="section-desc">劃過卡片即可觸發動態技能數值累加，這是卓老師帶進教室的核心價值：</p>
+        </div>
+
+        <div class="skills-grid">
+          <!-- 技能 1: 設計 -->
+          <div class="skill-card glass-card tilt-element" data-percent="98">
+            <div class="skill-header">
+              <div class="skill-icon-wrapper blue">🎨</div>
+              <div class="skill-value"><span class="counter-num" data-target="98">0</span>%</div>
+            </div>
+            <h3>視覺與介面設計</h3>
+            <p>把複雜難懂的資訊與邏輯，整理成大人小孩都能一眼看懂的清晰畫面與質感美學。</p>
+            <div class="meter-bar">
+              <div class="meter-fill blue-fill"></div>
+            </div>
+            <span class="accent-text">✦ 科技應該是優雅且易用的</span>
+          </div>
+
+          <!-- 技能 2: 程式 -->
+          <div class="skill-card glass-card tilt-element" data-percent="95">
+            <div class="skill-header">
+              <div class="skill-icon-wrapper green">💻</div>
+              <div class="skill-value"><span class="counter-num" data-target="95">0</span>%</div>
+            </div>
+            <h3>程式邏輯與除錯</h3>
+            <p>我不一定一次就把程式寫對，但我知道怎麼看懂錯誤訊息、耐心地除錯並找出問題根源。</p>
+            <div class="meter-bar">
+              <div class="meter-fill green-fill"></div>
+            </div>
+            <span class="accent-text badge-highlight">✦ 寫錯程式不是丟臉的事</span>
+          </div>
+
+          <!-- 技能 3: 教學 -->
+          <div class="skill-card glass-card tilt-element" data-percent="100">
+            <div class="skill-header">
+              <div class="skill-icon-wrapper amber">📖</div>
+              <div class="skill-value"><span class="counter-num" data-target="100">0</span>%</div>
+            </div>
+            <h3>觀念理解與引導</h3>
+            <p>我不希望你只是死板地照著步驟點按鈕，而是真正理解自己正在做什麼、為什麼要這樣做。</p>
+            <div class="meter-bar">
+              <div class="meter-fill amber-fill"></div>
+            </div>
+            <span class="accent-text">✦ 理解原理比死背步驟重要</span>
+          </div>
+
+          <!-- 技能 4: AI -->
+          <div class="skill-card glass-card tilt-element" data-percent="99">
+            <div class="skill-header">
+              <div class="skill-icon-wrapper purple">🤖</div>
+              <div class="skill-value"><span class="counter-num" data-target="99">0</span>%</div>
+            </div>
+            <h3>AI 協作創作</h3>
+            <p>AI 不是幫你抄答案的捷徑，而是當你擁有自己的想法時，能幫你做到原本做不到的事情。</p>
+            <div class="meter-bar">
+              <div class="meter-fill purple-fill"></div>
+            </div>
+            <span class="accent-text">✦ AI 是最強助教而非代筆者</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 第四幕：這學期任務地圖 -->
+    <section id="act-missions" class="section missions-section">
+      <div class="container">
+        <div class="section-header text-center">
+          <span class="section-tag">ACT IV :: SEMESTER ROADMAP</span>
+          <h2 class="section-title">這學期會遇到的五大任務</h2>
+          <p class="section-desc">配合康軒八年級資訊科技課程，我們要修練的核心任務：</p>
+        </div>
+
+        <div class="missions-timeline">
+          <!-- 任務 01 -->
+          <div class="mission-item tilt-element">
+            <div class="mission-badge">QUEST 01</div>
+            <div class="mission-card glass-card">
+              <div class="mission-header">
+                <h3>任務 01：辨識資訊</h3>
+                <span class="status-chip chip-blue">基礎能力</span>
+              </div>
+              <p>網路上的資訊鋪天蓋地，不是看到什麼就全部相信。學習如何驗證資料來源、辨別真偽與分析數位風險。</p>
+            </div>
+          </div>
+
+          <!-- 任務 02 -->
+          <div class="mission-item tilt-element">
+            <div class="mission-badge">QUEST 02</div>
+            <div class="mission-card glass-card">
+              <div class="mission-header">
+                <h3>任務 02：拆解問題</h3>
+                <span class="status-chip chip-green">運算思維</span>
+              </div>
+              <p>遇到看似龐大複雜的任務時，不慌張！練習把一個巨大的問題，拆解成電腦與人類都能理解的小步驟。</p>
+            </div>
+          </div>
+
+          <!-- 任務 03 -->
+          <div class="mission-item tilt-element">
+            <div class="mission-badge">QUEST 03</div>
+            <div class="mission-card glass-card">
+              <div class="mission-header">
+                <h3>任務 03：控制程式</h3>
+                <span class="status-chip chip-amber">邏輯實務</span>
+              </div>
+              <p>利用條件判斷、變數紀錄與清單管理，讓程式不再只是跑範例，而是精準依照你的想法去執行。</p>
+            </div>
+          </div>
+
+          <!-- 任務 04 -->
+          <div class="mission-item tilt-element">
+            <div class="mission-badge">QUEST 04</div>
+            <div class="mission-card glass-card">
+              <div class="mission-header">
+                <h3>任務 04：建立作品</h3>
+                <span class="status-chip chip-purple">專題創作</span>
+              </div>
+              <p>不只是完成老師課堂上的公版範例，而是加上帶有你自己獨特想法、風格與創意的專題作品。</p>
+            </div>
+          </div>
+
+          <!-- 最終任務 -->
+          <div class="mission-item final tilt-element">
+            <div class="mission-badge final-badge">FINAL QUEST</div>
+            <div class="mission-card final-card glass-card">
+              <div class="mission-header">
+                <h3>最終任務：用科技解決一個問題</h3>
+                <span class="status-chip chip-red">核心價值</span>
+              </div>
+              <p class="final-desc">
+                最後的作品不一定要非常炫目厲害，但必須能回答這句話：<br>
+                <strong class="highlight-text">「你為什麼要做這個？它幫誰解決了什麼問題？」</strong>
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 第五幕：老師的使用說明書 -->
+    <section id="act-manual" class="section manual-section">
+      <div class="container">
+        <div class="section-header text-center">
+          <span class="section-tag">ACT V :: SYSTEM MANUAL</span>
+          <h2 class="section-title">老師的使用說明書</h2>
+          <p class="section-desc">如何在資訊課順暢與卓老師協作？這是一份實用又清楚的指南：</p>
+        </div>
+
+        <div class="manual-columns">
+          <!-- 綠色指南 -->
+          <div class="manual-card success-card glass-card tilt-element">
+            <div class="card-title-bar green-bar">
+              <span class="icon">✅</span>
+              <h3>怎樣比較容易獲得老師協助？</h3>
+            </div>
+            <ul class="manual-list">
+              <li>
+                <span class="check-icon">✓</span>
+                <div>
+                  <strong>告訴我你做到哪一步</strong>
+                  <p>例如：「老師，我已經完成第二步的變數設定了……」</p>
+                </div>
+              </li>
+              <li>
+                <span class="check-icon">✓</span>
+                <div>
+                  <strong>說明你原本想讓它發生什麼</strong>
+                  <p>告訴老師你的預期結果：「我本來希望按下按鈕時角色會跳起來……」</p>
+                </div>
+              </li>
+              <li>
+                <span class="check-icon">✓</span>
+                <div>
+                  <strong>把錯誤畫面留著，不要立刻關掉</strong>
+                  <p>紅色的 Error 訊息是除錯最有價值的線索，保留它以便我們一起觀察！</p>
+                </div>
+              </li>
+              <li>
+                <span class="check-icon">✓</span>
+                <div>
+                  <strong>可以先問同學，但不要直接複製答案</strong>
+                  <p>問同學「怎麼做的」很好，但複製貼上只會讓你錯過弄懂的機會。</p>
+                </div>
+              </li>
+            </ul>
+          </div>
+
+          <!-- 警告指南 -->
+          <div class="manual-card warning-card glass-card tilt-element">
+            <div class="card-title-bar red-bar">
+              <span class="icon">⚠️</span>
+              <h3>哪些操作容易觸發系統警告？</h3>
+            </div>
+            <ul class="manual-list">
+              <li>
+                <span class="warn-icon">!</span>
+                <div>
+                  <strong>老師講解時一直切其他網頁或電玩</strong>
+                  <p>這樣會錯過關鍵操作指示，也會拖慢你自己與全班的進度。</p>
+                </div>
+              </li>
+              <li>
+                <span class="warn-icon">!</span>
+                <div>
+                  <strong>沒有看題目就一直說「我不會」</strong>
+                  <p>試著先讀一次題目與步驟，給自己的大腦一次嘗試解密的時間。</p>
+                </div>
+              </li>
+              <li>
+                <span class="warn-icon">!</span>
+                <div>
+                  <strong>把同學的作品直接當成自己的</strong>
+                  <p>誠實面對自己的進度，即使只是完成一部份，原創作品永遠最值得尊重。</p>
+                </div>
+              </li>
+              <li>
+                <span class="warn-icon">!</span>
+                <div>
+                  <strong>發現錯誤後直接放棄停止思考</strong>
+                  <p>錯誤是程式員日常的一部份，遇到 Bug 請深呼吸並召喚老師或同學協助！</p>
+                </div>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 第六幕：學生登入資料與通行證生成 -->
+    <section id="act-student" class="section student-section">
+      <div class="container">
+        <div class="section-header text-center">
+          <span class="section-tag">ACT VI :: CREATE YOUR PLAYER CARD</span>
+          <h2 class="section-title">換你建立玩家資料</h2>
+          <p class="section-desc">歡迎加入光武國中資訊伺服器！填寫你的玩家稱呼，生成專屬數位通行證：</p>
+        </div>
+
+        <div class="student-container">
+          <!-- 表單輸入區 -->
+          <div class="form-card glass-card tilt-element">
+            <form id="player-form" onsubmit="return false;">
+              
+              <div class="form-row grid-2">
+                <div class="form-group">
+                  <label for="student-name">希望老師怎麼稱呼你？ <span class="required">*</span></label>
+                  <input type="text" id="student-name" class="form-input" placeholder="例如：小明 / Alex" required>
+                </div>
+
+                <div class="form-group">
+                  <label for="student-class">你的班級座號 <span class="required">*</span></label>
+                  <input type="text" id="student-class" class="form-input" placeholder="例如：801 15號" required>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="student-usage">你使用電腦最常做什麼？</label>
+                <select id="student-usage" class="form-select">
+                  <option value="看 YouTube / 追劇 / 聽音樂">看 YouTube / 追劇 / 聽音樂</option>
+                  <option value="打玩遊戲 / 電競">打玩遊戲 / 電競</option>
+                  <option value="繪圖 / 剪輯影片 / 創作者">繪圖 / 剪輯影片 / 創作者</option>
+                  <option value="做報告 / 查資料 / 學習">做報告 / 查資料 / 學習</option>
+                  <option value="寫程式 / 探索軟體">寫程式 / 探索軟體</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label>你曾經學過或用過哪些資訊工具？（可多選）</label>
+                <div class="checkbox-group">
+                  <label class="chip-checkbox"><input type="checkbox" name="tools" value="Scratch"> Scratch</label>
+                  <label class="chip-checkbox"><input type="checkbox" name="tools" value="Canva 簡報"> Canva 簡報</label>
+                  <label class="chip-checkbox"><input type="checkbox" name="tools" value="Python"> Python</label>
+                  <label class="chip-checkbox"><input type="checkbox" name="tools" value="Micro:bit / 硬體"> Micro:bit / 硬體</label>
+                  <label class="chip-checkbox"><input type="checkbox" name="tools" value="ChatGPT / AI"> ChatGPT / AI</label>
+                  <label class="chip-checkbox"><input type="checkbox" name="tools" value="只有國一資訊課"> 只有國一資訊課</label>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="student-wish">這學期最想做出什麼作品？</label>
+                <input type="text" id="student-wish" class="form-input" placeholder="例如：做一個小遊戲、學會修圖、搞懂 AI 怎麼用...">
+              </div>
+
+              <div class="form-group">
+                <label for="student-note">有什麼是老師需要先知道的？（選填）</label>
+                <textarea id="student-note" class="form-textarea" rows="3" placeholder="例如：打字速度比較慢、螢幕看久眼睛會酸、希望老師多示範幾次..."></textarea>
+              </div>
+
+              <div class="form-actions text-center">
+                <button type="submit" id="submit-player-btn" class="btn btn-primary glowing-btn-large">
+                  <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><polyline points="17 11 19 13 23 9"></polyline></svg>
+                  生成我的專屬玩家通行證
+                </button>
+              </div>
+
+            </form>
+          </div>
+
+          <!-- 生成之學生通行證展示區 -->
+          <div id="player-pass-wrapper" class="player-pass-wrapper" style="display:none;">
+            <div class="pass-card glowing-pass" id="pass-card">
+              <div class="pass-header">
+                <div class="pass-brand">
+                  <span class="icon">🎟️</span> KWJH INFO CLASS :: PLAYER PASS
+                </div>
+                <span class="pass-status">STATUS: ONLINE & VERIFIED</span>
+              </div>
+              <div class="pass-body">
+                <div class="pass-avatar">
+                  <span id="pass-avatar-initial">P</span>
+                </div>
+                <div class="pass-info">
+                  <div class="pass-row">
+                    <span class="pass-label">玩家暱稱:</span>
+                    <strong id="pass-name-val" class="pass-val">--</strong>
+                  </div>
+                  <div class="pass-row">
+                    <span class="pass-label">班級座號:</span>
+                    <span id="pass-class-val" class="pass-val">--</span>
+                  </div>
+                  <div class="pass-row">
+                    <span class="pass-label">電腦主要習慣:</span>
+                    <span id="pass-usage-val" class="pass-val">--</span>
+                  </div>
+                  <div class="pass-row">
+                    <span class="pass-label">掌握工具:</span>
+                    <span id="pass-tools-val" class="pass-val">--</span>
+                  </div>
+                  <div class="pass-row">
+                    <span class="pass-label">本學期願望:</span>
+                    <span id="pass-wish-val" class="pass-val">--</span>
+                  </div>
+                </div>
+              </div>
+              <div class="pass-footer">
+                <span>導師：卓老師 | 伺服器：光武國中 8 年級資訊課</span>
+                <span class="stamp">VERIFIED ✓</span>
+              </div>
+            </div>
+
+            <div class="pass-actions text-center">
+              <button id="print-pass-btn" class="btn btn-secondary glowing-btn">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+                列印 / 儲存通行證
+              </button>
+              <button id="edit-pass-btn" class="btn btn-outline">修改資料</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container text-center">
+      <p>© 2026 光武國中 8 年級資訊科技課程 | 卓老師 
+        ‧ <a href="https://www.behance.net/syuanCho" target="_blank" rel="noopener noreferrer" style="color:var(--color-cyan); text-decoration:none;">Behance 作品集 ↗</a>
+      </p>
+      <p class="sub-footer">新玩家已登入 ‧ 科技與創意的修練場</p>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>

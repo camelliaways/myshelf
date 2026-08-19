@@ -12,6 +12,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;700&family=JetBrains+Mono:wght@500;700;800&family=Share+Tech+Mono&family=VT323&family=Noto+Sans+TC:wght@400;700;900&display=swap" rel="stylesheet">
   
   <link rel="stylesheet" href="pass.css">
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
 </head>
 <body class="matrix-theme">
 
@@ -166,19 +167,42 @@
                 <option value="繪圖 / 剪輯影片 / 創作者">繪圖 / 剪輯影片 / 創作者</option>
                 <option value="做報告 / 查資料 / 學習">做報告 / 查資料 / 學習</option>
                 <option value="寫程式 / 探索軟體">寫程式 / 探索軟體</option>
+                <option value="其他">其他...</option>
               </select>
+              <div id="other-usage-group" class="form-group" style="display: none; margin-top: 12px;">
+                <label for="p-usage-other">&gt; INPUT_OTHER_HABIT (請說明你的電腦習慣):</label>
+                <input type="text" id="p-usage-other" class="matrix-input" placeholder="例如：寫音樂、做 3D 建模、看動畫...">
+              </div>
             </div>
 
             <!-- Q4: 資訊技能解鎖 -->
             <div class="form-group">
-              <label>&gt; Q4. UNLOCKED_TECH_SKILLS (曾經用過哪些資訊工具？可多選)</label>
+              <label>&gt; Q4. DIGITAL_EXPLORATIONS (曾經嘗試過的數位探索，可複選)</label>
+              <span class="input-hint">// 沒關係，勾選你曾經玩過或試過的事情就好！</span>
               <div class="chip-group">
-                <label class="matrix-chip"><input type="checkbox" name="p-tools" value="Scratch 積木程式"> Scratch 積木程式</label>
-                <label class="matrix-chip"><input type="checkbox" name="p-tools" value="Canva 簡報設計"> Canva 簡報設計</label>
-                <label class="matrix-chip"><input type="checkbox" name="p-tools" value="Python 程式語言"> Python 程式語言</label>
-                <label class="matrix-chip"><input type="checkbox" name="p-tools" value="Micro:bit / 硬體"> Micro:bit / 硬體</label>
-                <label class="matrix-chip"><input type="checkbox" name="p-tools" value="ChatGPT / AI 工具"> ChatGPT / AI 工具</label>
-                <label class="matrix-chip"><input type="checkbox" name="p-tools" value="只有上過國一資訊課"> 只有上過國一資訊課</label>
+                <label class="matrix-chip"><input type="checkbox" name="p-tools" value="玩過 Scratch 積木程式"> 玩過 Scratch 積木程式</label>
+                <label class="matrix-chip"><input type="checkbox" name="p-tools" value="用 Canva 做過簡報或海報"> 用 Canva 做過簡報或海報</label>
+                <label class="matrix-chip"><input type="checkbox" name="p-tools" value="自己剪過個人短影片"> 自己剪過個人短影片</label>
+                <label class="matrix-chip"><input type="checkbox" name="p-tools" value="跟 ChatGPT/AI 聊過天"> 跟 ChatGPT/AI 聊過天</label>
+                <label class="matrix-chip"><input type="checkbox" name="p-tools" value="寫過程式或控制硬體小車"> 寫過程式或控制硬體小車</label>
+                <label class="matrix-chip"><input type="checkbox" name="p-tools" value="只有上過一般國小資訊課"> 只有上過一般國小資訊課</label>
+              </div>
+            </div>
+
+            <!-- Q4.5: 打字熟練度 -->
+            <div class="form-group">
+              <label for="p-typing">&gt; Q4.5. TYPING_LEVEL (中英文打字熟練度)</label>
+              <div class="typing-slider-wrapper" style="display: flex; align-items: center; gap: 16px; margin: 12px 0;">
+                <input type="range" id="p-typing" min="1" max="5" value="3" class="matrix-input" style="flex-grow: 1; accent-color: var(--matrix-green); cursor: pointer; padding: 0;">
+                <span id="typing-level-badge" class="pass-status-badge" style="min-width: 120px; text-align: center; font-size: 0.9rem;">[ 3: 正常輸入 ]</span>
+              </div>
+              <span class="input-hint" style="display: block; font-family: var(--font-tech); font-size: 0.8rem; color: var(--matrix-text-muted); margin-top: 4px;">
+                ✨ 提示：打字速度是掌握程式世界的黃金之鑰，這學期讓我們一起練習盲打、越打越快！
+              </span>
+              <div class="typing-practice-links" style="display: flex; gap: 16px; margin-top: 12px; font-family: var(--font-tech); font-size: 0.85rem;">
+                <span style="color: var(--matrix-text-muted);">&gt; RECOMMEND_LINKS:</span>
+                <a href="https://monkeytype.com/" target="_blank" rel="noopener noreferrer" class="matrix-link" style="text-decoration: underline;">Monkeytype ↗</a>
+                <a href="https://typing.tw/" target="_blank" rel="noopener noreferrer" class="matrix-link" style="text-decoration: underline;">中文打字練習 ↗</a>
               </div>
             </div>
 
@@ -242,7 +266,7 @@
             </div>
 
             <div class="pass-card-bottom font-tech">
-              <span>INSTRUCTOR: MR. ZHUO // SERVER: KWJH-8</span>
+              <span>INSTRUCTOR: MR. CHO // SERVER: KWJH-8</span>
               <span class="stamp-verified">[ AUTHORIZED ✓ ]</span>
             </div>
           </div>
@@ -264,7 +288,7 @@
   </main>
 
   <footer class="matrix-footer text-center font-tech">
-    <p>© 2026 KWJH INFO CS 8 MATRIX // MR. ZHUO 
+    <p>© 2026 KWJH INFO CS 8 MATRIX // MR. CHO 
       ‧ <a href="https://www.behance.net/syuanCho" target="_blank" rel="noopener noreferrer" class="matrix-link">BEHANCE PORTFOLIO ↗</a>
     </p>
   </footer>

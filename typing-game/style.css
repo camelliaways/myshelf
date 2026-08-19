@@ -1,0 +1,507 @@
+/* ==========================================================================
+   POETRY LAB // RETRO TYPING CHALLENGE STYLESHEET
+   ========================================================================== */
+
+:root {
+  --neon-green: #00ff41;
+  --neon-green-dim: rgba(0, 255, 65, 0.15);
+  --neon-green-glow: rgba(0, 255, 65, 0.4);
+  --retro-black: #0a0a0a;
+  --retro-gray: #1b1b1b;
+  --retro-text-muted: #555;
+  --retro-text-bright: #eee;
+  --retro-error: #ff3b30;
+  --font-mono: 'JetBrains Mono', monospace;
+  --font-display: 'Orbitron', sans-serif;
+  --font-serif: 'Noto Serif TC', serif;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body.retro-theme {
+  background-color: var(--retro-black);
+  color: var(--neon-green);
+  font-family: var(--font-mono);
+  overflow-x: hidden;
+  height: 100vh;
+  position: relative;
+}
+
+/* CRT 螢幕掃描線與弧度特效 */
+.crt-overlay {
+  pointer-events: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+  background-size: 100% 4px, 3px 100%;
+  z-index: 9999;
+}
+
+.crt-overlay::after {
+  content: " ";
+  display: block;
+  position: fixed;
+  top: 0; left: 0; bottom: 0; right: 0;
+  background: radial-gradient(circle, rgba(18, 16, 16, 0) 60%, rgba(0, 0, 0, 0.6) 100%);
+  z-index: 10000;
+  pointer-events: none;
+}
+
+/* 遊戲主版面結構 */
+.game-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  justify-content: space-between;
+}
+
+.border-bottom-medium {
+  border-bottom: 3px solid var(--neon-green);
+}
+.border-bottom-thin {
+  border-bottom: 1px solid var(--neon-green-dim);
+}
+.border-thin {
+  border: 1px solid var(--neon-green-dim);
+}
+.border-medium {
+  border: 2px solid var(--neon-green);
+}
+
+/* Header */
+.game-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 12px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.brand h1 {
+  font-size: 1.5rem;
+  letter-spacing: 2px;
+  text-shadow: 0 0 10px var(--neon-green-glow);
+}
+
+.pulse-dot {
+  width: 10px;
+  height: 10px;
+  background-color: var(--neon-green);
+  border-radius: 50%;
+  box-shadow: 0 0 10px var(--neon-green);
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0% { transform: scale(0.9); opacity: 0.6; }
+  50% { transform: scale(1.2); opacity: 1; box-shadow: 0 0 15px var(--neon-green); }
+  100% { transform: scale(0.9); opacity: 0.6; }
+}
+
+/* HUD 面板 */
+.hud-panel {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+  padding: 16px 0;
+}
+
+.hud-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.hud-label {
+  font-size: 0.75rem;
+  color: var(--retro-text-muted);
+  letter-spacing: 1px;
+}
+
+.hud-val {
+  font-size: 2.2rem;
+  font-weight: 900;
+  text-shadow: 0 0 10px var(--neon-green-dim);
+}
+
+.progress-bar-wrapper {
+  background-color: var(--retro-gray);
+  height: 6px;
+  border: 1px solid var(--neon-green-dim);
+  margin-top: 8px;
+  width: 100%;
+  overflow: hidden;
+}
+
+.progress-bar {
+  background-color: var(--neon-green);
+  height: 100%;
+  box-shadow: 0 0 8px var(--neon-green);
+  transition: width 0.1s linear;
+}
+
+/* 關卡選擇器 */
+.level-selector {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 0;
+}
+
+.level-btns {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+}
+
+.level-btn {
+  background: none;
+  border: 1px solid var(--neon-green-dim);
+  color: var(--neon-green);
+  padding: 6px 14px;
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.level-btn:hover, .level-btn.active {
+  background-color: var(--neon-green);
+  color: var(--retro-black);
+  box-shadow: 0 0 10px var(--neon-green-glow);
+  border-color: var(--neon-green);
+}
+
+/* 打字核心區塊 */
+.typing-arena {
+  position: relative;
+  flex-grow: 1;
+  background-color: rgba(27, 27, 27, 0.4);
+  border: 1px solid var(--neon-green-dim);
+  margin: 20px 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  overflow: hidden;
+}
+
+/* 隱藏的實體輸入框 */
+#typing-input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* 未聚焦警告遮罩 */
+.focus-overlay {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: rgba(10, 10, 10, 0.9);
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  backdrop-filter: blur(2px);
+}
+
+.focus-alert-content {
+  text-align: center;
+}
+
+.focus-alert-content p {
+  font-size: 1.1rem;
+  margin-bottom: 12px;
+  color: var(--retro-error);
+}
+
+.pulse-text {
+  animation: textPulse 1s infinite alternate;
+}
+
+@keyframes textPulse {
+  from { opacity: 0.4; }
+  to { opacity: 1; text-shadow: 0 0 10px var(--neon-green); }
+}
+
+/* 詩詞與文字渲染 */
+.poem-wrapper {
+  max-width: 800px;
+  width: 100%;
+  text-align: center;
+}
+
+.poem-header {
+  font-family: var(--font-serif);
+  font-size: 2.2rem;
+  font-weight: 900;
+  color: var(--retro-text-bright);
+  margin-bottom: 8px;
+}
+
+.poem-sub {
+  font-family: var(--font-mono);
+  font-size: 1rem;
+  color: var(--retro-text-muted);
+  margin-bottom: 32px;
+  letter-spacing: 2px;
+}
+
+.typing-text-display {
+  font-family: var(--font-serif);
+  font-size: 1.85rem;
+  line-height: 1.8;
+  letter-spacing: 0.25em;
+  color: var(--retro-text-muted);
+  white-space: pre-wrap;
+  user-select: none;
+}
+
+/* 字元狀態 */
+.char {
+  position: relative;
+  transition: all 0.15s ease;
+}
+
+.char.pending {
+  color: #333;
+}
+
+.char.current {
+  color: #fff;
+  background-color: rgba(255, 255, 255, 0.15);
+  border-bottom: 2px solid var(--neon-green);
+  text-shadow: 0 0 8px #fff;
+}
+
+.char.correct {
+  color: var(--neon-green);
+  text-shadow: 0 0 12px var(--neon-green-glow);
+}
+
+.char.incorrect {
+  color: var(--retro-error);
+  background-color: rgba(255, 59, 48, 0.15);
+  text-shadow: 0 0 8px var(--retro-error);
+  animation: shake 0.15s linear;
+}
+
+@keyframes shake {
+  0% { transform: translateX(-2px); }
+  25% { transform: translateX(2px); }
+  50% { transform: translateX(-2px); }
+  75% { transform: translateX(2px); }
+  100% { transform: translateX(0); }
+}
+
+/* Footer 控制台與排行榜 */
+.grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  height: 220px;
+}
+
+.console-box, .leaderboard-box {
+  background-color: rgba(27, 27, 27, 0.2);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.box-title {
+  background-color: var(--neon-green-dim);
+  padding: 6px 12px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  border-bottom: 1px solid var(--neon-green-dim);
+}
+
+.console-body, .leaderboard-body {
+  padding: 12px;
+  flex-grow: 1;
+  overflow-y: auto;
+  font-size: 0.8rem;
+}
+
+.console-body p {
+  margin-bottom: 6px;
+  line-height: 1.4;
+}
+
+.text-dim {
+  color: var(--retro-text-muted);
+}
+
+.console-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.retro-btn {
+  background: none;
+  border: 1px solid var(--neon-green);
+  color: var(--neon-green);
+  padding: 6px 12px;
+  font-family: var(--font-mono);
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.retro-btn:hover {
+  background-color: var(--neon-green);
+  color: var(--retro-black);
+  box-shadow: 0 0 8px var(--neon-green-glow);
+}
+
+.retro-btn.btn-outline {
+  border-color: var(--retro-text-muted);
+  color: var(--retro-text-muted);
+}
+
+.retro-btn.btn-outline:hover {
+  background-color: var(--retro-text-muted);
+  color: var(--retro-black);
+}
+
+.btn-sm {
+  font-size: 0.75rem;
+  padding: 4px 8px;
+}
+
+/* 排行榜表格 */
+.leaderboard-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.leaderboard-table th {
+  color: var(--retro-text-muted);
+  font-size: 0.75rem;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--neon-green-dim);
+}
+
+.leaderboard-table td {
+  padding: 6px 0;
+  border-bottom: 1px dashed rgba(0, 255, 65, 0.05);
+}
+
+/* 登錄彈出視窗 */
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: rgba(10, 10, 10, 0.85);
+  backdrop-filter: blur(4px);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-content {
+  background-color: var(--retro-gray);
+  padding: 32px;
+  width: 450px;
+  max-width: 90%;
+  border: 2px solid var(--neon-green);
+  box-shadow: 0 0 20px var(--neon-green-glow);
+}
+
+.modal-title {
+  margin-bottom: 16px;
+  text-shadow: 0 0 10px var(--neon-green-glow);
+}
+
+.form-row {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 16px;
+}
+
+.form-row label {
+  font-size: 0.8rem;
+  color: var(--retro-text-muted);
+  margin-bottom: 6px;
+}
+
+.retro-input {
+  background-color: var(--retro-black);
+  border: 1px solid var(--neon-green-dim);
+  color: var(--neon-green);
+  padding: 8px;
+  font-family: var(--font-mono);
+  font-size: 0.95rem;
+}
+
+.retro-input:focus {
+  outline: none;
+  border-color: var(--neon-green);
+  box-shadow: 0 0 8px var(--neon-green-glow);
+}
+
+.stats-summary {
+  padding: 12px;
+  background-color: rgba(10, 10, 10, 0.5);
+  margin-bottom: 24px;
+}
+
+.stats-summary p {
+  margin-bottom: 6px;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+/* 底部回首頁標誌 */
+.back-home-badge {
+  position: fixed;
+  bottom: 16px;
+  right: 16px;
+  background-color: var(--retro-gray);
+  border: 1px solid var(--neon-green-dim);
+  padding: 6px 12px;
+  color: var(--neon-green);
+  text-decoration: none;
+  font-size: 0.75rem;
+  z-index: 1000;
+  transition: all 0.2s;
+}
+
+.back-home-badge:hover {
+  background-color: var(--neon-green);
+  color: var(--retro-black);
+  border-color: var(--neon-green);
+  box-shadow: 0 0 8px var(--neon-green-glow);
+}
+
+/* 響應式佈局 */
+@media (max-width: 768px) {
+  .hud-panel {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .grid-2 {
+    grid-template-columns: 1fr;
+    height: auto;
+  }
+}

@@ -58,7 +58,65 @@ document.addEventListener('DOMContentLoaded', () => {
   window.addEventListener('scroll', checkSkillsScroll);
   checkSkillsScroll();
 
-  // 3. 學生玩家通行證表單處理 (Student Login & Player Pass)
+  // 3.1 「使用電腦主要習慣」其他選項切換
+  const usageSelect = document.getElementById('m-usage');
+  const otherUsageGroup = document.getElementById('other-usage-group');
+  const otherUsageInput = document.getElementById('m-usage-other');
+  
+  usageSelect?.addEventListener('change', () => {
+    if (usageSelect.value === '其他') {
+      if (otherUsageGroup) otherUsageGroup.style.display = 'block';
+      if (otherUsageInput) otherUsageInput.required = true;
+    } else {
+      if (otherUsageGroup) otherUsageGroup.style.display = 'none';
+      if (otherUsageInput) {
+        otherUsageInput.required = false;
+        otherUsageInput.value = '';
+      }
+    }
+  });
+
+  // 3.2 打字程度拉桿數值顯示連動
+  const typingSlider = document.getElementById('m-typing');
+  const typingBadge = document.getElementById('typing-level-badge');
+  const typingLabels = {
+    1: '一指神功 🐢',
+    2: '需要看鍵盤 ⌨️',
+    3: '正常輸入 ⚡',
+    4: '盲打練習中 🚀',
+    5: '飛速輸入 ☄️'
+  };
+
+  typingSlider?.addEventListener('input', () => {
+    const val = typingSlider.value;
+    if (typingBadge) {
+      typingBadge.textContent = `[ ${val}: ${typingLabels[val]} ]`;
+    }
+  });
+
+  // 3.3 Google Apps Script 直連同步設定
+  const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbx6KKDsk-qNoCaw-03i7enBR6tZLwqZSnEU8n7wpunK2J-f_AlIhmRBR86H4VRqDKnX/exec';
+
+  function directSyncToSpreadsheet(data) {
+    if (!WEB_APP_URL) return;
+    const params = new URLSearchParams();
+    params.append('name', data.name);
+    params.append('classNum', data.classNum);
+    params.append('usage', data.usage);
+    params.append('tools', data.tools.join(', '));
+    params.append('wish', data.wish);
+
+    fetch(WEB_APP_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: params.toString()
+    }).then(() => {
+      console.log('[ AUTO_SYNC ] 通行證資料已同步至試算表！');
+    }).catch(err => console.error('Sync error:', err));
+  }
+
+  // 3.4 學生玩家通行證表單處理 (Student Login & Player Pass)
   const form = document.getElementById('mono-player-form');
   const passResult = document.getElementById('mono-pass-result');
   const printBtn = document.getElementById('print-mono-btn');
@@ -100,7 +158,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const name = document.getElementById('m-name').value.trim();
     const classNum = document.getElementById('m-class').value.trim();
-    const usage = document.getElementById('m-usage').value;
+    const usageVal = usageSelect.value;
+    const typingVal = typingSlider ? typingLabels[typingSlider.value] : '正常輸入 ⚡';
+    
+    // 合併「電腦習慣」與「打字熟練度」送入試算表
+    const finalUsage = (usageVal === '其他' && otherUsageInput ? '其他: ' + otherUsageInput.value.trim() : usageVal) + ` (打字: ${typingVal})`;
     const wish = document.getElementById('m-wish').value.trim();
 
     const tools = [];
@@ -113,8 +175,12 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    const data = { name, classNum, usage, tools, wish, timestamp: new Date().toISOString() };
+    const data = { name, classNum, usage: finalUsage, tools, wish, timestamp: new Date().toISOString() };
     localStorage.setItem('MONO_PLAYER_PASS_DATA', JSON.stringify(data));
+    
+    // 動態同步寫入 Google 試算表（支援重複提交覆蓋）
+    directSyncToSpreadsheet(data);
+    
     renderPass(data);
   });
 

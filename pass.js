@@ -203,10 +203,46 @@ document.addEventListener('DOMContentLoaded', () => {
     updateLivePreview();
   });
 
+  // 5.0 其他選項顯示切換與打字拉桿
+  const otherUsageGroup = document.getElementById('other-usage-group');
+  const otherUsageInput = document.getElementById('p-usage-other');
+  const inputUsage = document.getElementById('p-usage');
+  
+  inputUsage?.addEventListener('change', () => {
+    if (inputUsage.value === '其他') {
+      if (otherUsageGroup) otherUsageGroup.style.display = 'block';
+      if (otherUsageInput) otherUsageInput.required = true;
+    } else {
+      if (otherUsageGroup) otherUsageGroup.style.display = 'none';
+      if (otherUsageInput) {
+        otherUsageInput.required = false;
+        otherUsageInput.value = '';
+      }
+    }
+    updateLivePreview();
+  });
+
+  const typingSlider = document.getElementById('p-typing');
+  const typingBadge = document.getElementById('typing-level-badge');
+  const typingLabels = {
+    1: '一指神功 🐢',
+    2: '需要看鍵盤 ⌨️',
+    3: '正常輸入 ⚡',
+    4: '盲打練習中 🚀',
+    5: '飛速輸入 ☄️'
+  };
+
+  typingSlider?.addEventListener('input', () => {
+    const val = typingSlider.value;
+    if (typingBadge) {
+      typingBadge.textContent = `[ ${val}: ${typingLabels[val]} ]`;
+    }
+    updateLivePreview();
+  });
+
   // 5. 表單互動、即時卡片繪製與防爆 URLSearchParams 直連背景自動同步
   const passForm = document.getElementById('student-pass-form');
   const inputName = document.getElementById('p-name');
-  const inputUsage = document.getElementById('p-usage');
   const inputWish = document.getElementById('p-wish');
   const toolCheckboxes = document.querySelectorAll('input[name="p-tools"]');
 
@@ -229,7 +265,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const seatVal = seatInput && seatInput.value.trim() ? `${seatInput.value.trim()}號` : '未填座號';
     const classNum = `${clsVal} ${seatVal}`;
     
-    const usage = inputUsage.value || '--';
+    const usageVal = inputUsage.value || '--';
+    const typingVal = typingSlider ? typingLabels[typingSlider.value] : '正常輸入 ⚡';
+    const usageCombined = (usageVal === '其他' && otherUsageInput ? '其他: ' + otherUsageInput.value.trim() : usageVal) + ` (打字: ${typingVal})`;
     const wish = inputWish.value.trim() || '--';
 
     const selectedTools = [];
@@ -237,7 +275,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (cardName) cardName.textContent = name;
     if (cardClass) cardClass.textContent = classNum;
-    if (cardUsage) cardUsage.textContent = usage;
+    if (cardUsage) cardUsage.textContent = usageCombined;
     if (cardTools) cardTools.textContent = selectedTools.length > 0 ? selectedTools.join(', ') : '自學探索中';
     if (cardWish) cardWish.textContent = wish;
     
@@ -273,7 +311,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   inputName?.addEventListener('input', updateLivePreview);
   seatInput?.addEventListener('input', updateLivePreview);
-  inputUsage?.addEventListener('change', updateLivePreview);
   inputWish?.addEventListener('input', updateLivePreview);
   toolCheckboxes.forEach(cb => cb.addEventListener('change', updateLivePreview));
 
@@ -289,10 +326,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const selectedTools = [];
     toolCheckboxes.forEach(cb => { if (cb.checked) selectedTools.push(cb.value); });
 
+    const usageVal = inputUsage.value;
+    const typingVal = typingSlider ? typingLabels[typingSlider.value] : '正常輸入 ⚡';
+    const finalUsage = (usageVal === '其他' && otherUsageInput ? '其他: ' + otherUsageInput.value.trim() : usageVal) + ` (打字: ${typingVal})`;
+
     const data = {
       name,
       classNum: `${classSelect.value} ${seatVal}號`,
-      usage: inputUsage.value,
+      usage: finalUsage,
       tools: selectedTools,
       wish: inputWish.value.trim(),
       spreadsheetId: SPREADSHEET_ID,

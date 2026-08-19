@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>POETRY LAB // 復古詩詞打字生存挑戰</title>
+  
+  <!-- Google Fonts: Orbitron & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;700&family=Orbitron:wght@400;700;900&family=Noto+Serif+TC:wght@400;700;900&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="retro-theme">
+  <!-- CRT 掃描線效果疊加層 -->
+  <div class="crt-overlay"></div>
+
+  <div class="game-container">
+    <!-- 頂部標題與主機狀態 -->
+    <header class="game-header border-bottom-medium">
+      <div class="brand">
+        <span class="pulse-dot"></span>
+        <h1 class="font-display">POETRY_LAB // v1.0.4</h1>
+      </div>
+      <div class="sys-status font-mono">
+        SYSTEM: ACTIVE // CONNECTION: SECURE // TERMINAL_801
+      </div>
+    </header>
+
+    <!-- 遊戲資訊 HUD 面板 -->
+    <section class="hud-panel border-bottom-thin">
+      <div class="hud-item">
+        <span class="hud-label font-mono">SPEED (WPM)</span>
+        <span id="stat-wpm" class="hud-val font-display">000</span>
+      </div>
+      <div class="hud-item">
+        <span class="hud-label font-mono">ACCURACY</span>
+        <span id="stat-acc" class="hud-val font-display">100%</span>
+      </div>
+      <div class="hud-item">
+        <span class="hud-label font-mono">COMBO</span>
+        <span id="stat-combo" class="hud-val font-display">00</span>
+      </div>
+      <div class="hud-item">
+        <span class="hud-label font-mono">TIME REMAINING</span>
+        <div class="progress-bar-wrapper">
+          <div id="time-bar" class="progress-bar" style="width: 100%;"></div>
+        </div>
+        <span id="stat-time" class="hud-val font-display" style="font-size: 1.2rem; margin-top: 4px;">60.0s</span>
+      </div>
+    </section>
+
+    <!-- 關卡與古詩選擇器 -->
+    <section class="level-selector border-bottom-thin">
+      <span class="mono-label font-mono">[ SELECT_SECTOR ]:</span>
+      <div class="level-btns">
+        <button class="level-btn active" data-id="0">《靜夜思》李白</button>
+        <button class="level-btn" data-id="1">《登鸛雀樓》王之渙</button>
+        <button class="level-btn" data-id="2">《江雪》柳宗元</button>
+        <button class="level-btn" data-id="3">《將進酒》李白</button>
+        <button class="level-btn" data-id="4">《琵琶行》白居易</button>
+      </div>
+    </section>
+
+    <!-- 打字核心區塊 -->
+    <main class="typing-arena" id="typing-trigger-zone">
+      <!-- 提示點擊開始聚焦 -->
+      <div id="focus-alert" class="focus-overlay">
+        <div class="focus-alert-content font-mono">
+          <p>[ SYSTEM CHECK // KEYBOARD NOT FOCUSED ]</p>
+          <span class="pulse-text">點擊此處開始解鎖系統...</span>
+        </div>
+      </div>
+
+      <!-- 隱藏的輸入框，用來接收拼音或注音輸入法所產生的中文字元 -->
+      <input type="text" id="typing-input" autocomplete="off" autofocus>
+
+      <!-- 詩詞渲染區 -->
+      <div class="poem-wrapper">
+        <h2 id="poem-title" class="poem-header"></h2>
+        <div id="poem-author" class="poem-sub"></div>
+        <div id="text-display" class="typing-text-display">
+          <!-- 字元會動態在這裡生成 -->
+        </div>
+      </div>
+    </main>
+
+    <!-- 下方控制台與排行榜 -->
+    <footer class="game-footer grid-2">
+      <!-- 控制按鈕與提示 -->
+      <div class="console-box border-thin font-mono">
+        <div class="box-title">[ CONSOLE_DIAGNOSTIC ]</div>
+        <div class="console-body">
+          <p class="status-msg">&gt; 鍵盤音效已載入。請切換為中文輸入法，開始輸入黃色標記字元。</p>
+          <p class="status-msg text-dim">&gt; 中打提示：直接打出對應中文。打字熟練度關係到系統生存度！</p>
+          <div class="console-actions">
+            <button id="reset-game-btn" class="retro-btn btn-sm">[ ✏️ RESTART // 重來 ]</button>
+            <button id="toggle-sound-btn" class="retro-btn btn-sm">[ 🔊 SOUND: ON ]</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 本地課堂排行榜 -->
+      <div class="leaderboard-box border-thin font-mono">
+        <div class="box-title">[ TOP_PLAYERS_LEADERBOARD ]</div>
+        <div class="leaderboard-body">
+          <table class="leaderboard-table">
+            <thead>
+              <tr>
+                <th style="width: 10%;">RANK</th>
+                <th style="width: 25%;">PLAYER</th>
+                <th style="width: 25%;">CLASS</th>
+                <th style="width: 20%;">SPEED (WPM)</th>
+                <th style="width: 20%;">ACCURACY</th>
+              </tr>
+            </thead>
+            <tbody id="leaderboard-rows">
+              <!-- 排行榜資料動態生成 -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <!-- 成績登記對話框 (Modal) -->
+  <div id="score-modal" class="modal-overlay" style="display: none;">
+    <div class="modal-content border-medium font-mono">
+      <h3 class="modal-title font-display">[ QUEST_COMPLETED // 任務解鎖成功 ]</h3>
+      <div class="modal-body">
+        <p>你已成功完成挑戰！請登記你的玩家資料：</p>
+        <div class="form-row">
+          <label for="player-name">呼號 NAME:</label>
+          <input type="text" id="player-name" class="retro-input" placeholder="例如：小明" required>
+        </div>
+        <div class="form-row">
+          <label for="player-class">班級座號 CLASS:</label>
+          <input type="text" id="player-class" class="retro-input" placeholder="例如：801 15號" required>
+        </div>
+        <div class="stats-summary border-thin">
+          <p>打字速度 / SPEED: <strong id="modal-wpm">0</strong> WPM</p>
+          <p>準確率 / ACCURACY: <strong id="modal-acc">100%</strong></p>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="submit-score-btn" class="retro-btn">[ 💾 SAVE & REGISTER ]</button>
+        <button id="close-modal-btn" class="retro-btn btn-outline">[ DISMISS ]</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 回首頁按鈕 -->
+  <a href="../index.html" class="back-home-badge font-mono">[ &larr; BACK_TO_PROFILE // 返回主頁 ]</a>
+
+  <script src="script.js"></script>
+</body>
+</html>
