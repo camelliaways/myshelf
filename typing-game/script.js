@@ -207,9 +207,27 @@ document.addEventListener('DOMContentLoaded', () => {
     return Math.round((correctCount / total) * 100);
   }
 
-  // 6. 輸入監聽與邏輯 (相容中文輸入法 IME)
-  // 利用 input 事件擷取完成組字的中文
-  typingInput.addEventListener('input', (e) => {
+  // 6. 輸入監聽與邏輯 (支援注音/拼音組字顯示與詞彙整批比對)
+  let isComposing = false;
+
+  typingInput.addEventListener('compositionstart', () => {
+    isComposing = true;
+  });
+
+  typingInput.addEventListener('compositionend', () => {
+    isComposing = false;
+    // 組字完成後，立即進行比對
+    checkInput();
+  });
+
+  typingInput.addEventListener('input', () => {
+    // 非組字期間的輸入（例如：英文、數字或已確認的中文）
+    if (!isComposing) {
+      checkInput();
+    }
+  });
+
+  function checkInput() {
     if (isGameOver) return;
     
     // 第一個字被輸入時啟動計時器
@@ -221,40 +239,61 @@ document.addEventListener('DOMContentLoaded', () => {
     const value = typingInput.value;
     if (!value) return;
 
-    // 取得剛輸入的最後一個完整中文字
-    const typedChar = value.charAt(value.length - 1);
-    const targetChar = poemChars[currentIndex];
-
-    if (typedChar === targetChar) {
-      // 輸入正確
-      playSound(780, 0.06); // 清脆鍵盤音
-      charElements[currentIndex].className = 'char correct';
-      correctCount++;
-      comboCount++;
+    let matchedCount = 0;
+    
+    // 逐字比對輸入框中的字與詩詞字元
+    for (let i = 0; i < value.length; i++) {
+      const typedChar = value.charAt(i);
+      const targetChar = poemChars[currentIndex + matchedCount];
       
+      if (targetChar && typedChar === targetChar) {
+        charElements[currentIndex + matchedCount].className = 'char correct';
+        matchedCount++;
+      } else {
+        break; // 一旦不符合就停止比對
+      }
+    }
+
+    if (matchedCount > 0) {
+      // 成功打對字
+      playSound(780, 0.06); // 清脆鍵盤音
+      correctCount += matchedCount;
+      comboCount += matchedCount;
+
+      // 移除輸入框中已打對的字
+      typingInput.value = value.substring(matchedCount);
+
       // 移動到下一個字元
-      currentIndex++;
+      if (charElements[currentIndex]) {
+        charElements[currentIndex].classList.remove('current');
+      }
+      
+      currentIndex += matchedCount;
+      
       if (currentIndex < poemChars.length) {
         charElements[currentIndex].classList.add('current');
       } else {
-        // 完成全部打字！
+        // 完成整首詩！
         endGame(true);
       }
     } else {
-      // 輸入錯誤
-      playSound(140, 0.15, 'sawtooth'); // 低沉錯誤音
-      charElements[currentIndex].classList.add('incorrect');
-      setTimeout(() => {
-        charElements[currentIndex].classList.remove('incorrect');
-      }, 300);
-      mistakeCount++;
-      comboCount = 0; // Combo 中斷
+      // 如果輸入框已經有完整中文字，但卻與目標字不符（打錯字）
+      const trimmed = value.trim();
+      if (trimmed.length > 0 && !isComposing) {
+        playSound(140, 0.15, 'sawtooth'); // 低沉錯誤音
+        charElements[currentIndex].classList.add('incorrect');
+        setTimeout(() => {
+          if (charElements[currentIndex]) {
+            charElements[currentIndex].classList.remove('incorrect');
+          }
+        }, 300);
+        mistakeCount++;
+        comboCount = 0; // Combo 中斷
+      }
     }
 
-    // 清空輸入框以備下一次輸入
-    typingInput.value = '';
     updateHUD();
-  });
+  }
 
   // 7. 計時器與遊戲結束
   function startTimer() {
