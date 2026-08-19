@@ -73,15 +73,18 @@
         </div>
       </div>
 
-      <!-- 隱藏的輸入框，用來接收拼音或注音輸入法所產生的中文字元 -->
-      <input type="text" id="typing-input" autocomplete="off" autofocus>
-
       <!-- 詩詞渲染區 -->
       <div class="poem-wrapper">
         <h2 id="poem-title" class="poem-header"></h2>
         <div id="poem-author" class="poem-sub"></div>
         <div id="text-display" class="typing-text-display">
           <!-- 字元會動態在這裡生成 -->
+        </div>
+
+        <!-- 顯式的輸入框，讓中打組字過程可見，支援詞彙輸入與確認送出 -->
+        <div class="input-container border-thin">
+          <span class="prompt">&gt;_</span>
+          <input type="text" id="typing-input" class="visible-typing-input" placeholder="請在此處輸入中文..." autocomplete="off" autofocus>
         </div>
       </div>
     </main>

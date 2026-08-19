@@ -200,11 +200,47 @@ body.retro-theme {
   overflow: hidden;
 }
 
-/* 隱藏的實體輸入框 */
-#typing-input {
-  position: absolute;
-  opacity: 0;
-  pointer-events: none;
+/* 顯式打字輸入框容器 */
+.input-container {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  max-width: 500px;
+  margin: 32px auto 0 auto;
+  background-color: var(--retro-gray);
+  border: 1px solid var(--neon-green-dim);
+  padding: 8px 16px;
+  transition: all 0.3s ease;
+}
+
+.input-container:focus-within {
+  border-color: var(--neon-green);
+  box-shadow: 0 0 10px var(--neon-green-glow);
+}
+
+.input-container .prompt {
+  color: var(--neon-green);
+  font-family: var(--font-mono);
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin-right: 12px;
+}
+
+.visible-typing-input {
+  background: none;
+  border: none;
+  color: var(--retro-text-bright);
+  font-family: var(--font-serif);
+  font-size: 1.4rem;
+  width: 100%;
+  outline: none;
+  caret-color: var(--neon-green);
+}
+
+.visible-typing-input::placeholder {
+  color: var(--retro-text-muted);
+  font-size: 0.95rem;
+  font-family: var(--font-mono);
 }
 
 /* 未聚焦警告遮罩 */
