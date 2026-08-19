@@ -636,6 +636,30 @@ body {
   margin-top: 48px;
 }
 
+.sync-status {
+  min-height: 1.5em;
+  margin: 14px 0;
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.sync-status[data-state="sending"] { color: var(--fg-muted); }
+.sync-status[data-state="success"] { color: var(--fg-black); }
+.sync-status[data-state="error"] { color: #9b1c1c; }
+
+.submission-guide {
+  margin-top: 22px;
+  padding: 18px;
+  font-family: var(--font-mono);
+}
+
+.submission-guide ol {
+  margin: 12px 0 18px;
+  padding-left: 1.5rem;
+  line-height: 1.8;
+}
+
 .pass-box {
   background: var(--bg-white);
   padding: 32px;

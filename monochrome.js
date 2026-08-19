@@ -98,36 +98,55 @@ document.addEventListener('DOMContentLoaded', () => {
   const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbx6KKDsk-qNoCaw-03i7enBR6tZLwqZSnEU8n7wpunK2J-f_AlIhmRBR86H4VRqDKnX/exec';
 
   function directSyncToSpreadsheet(data) {
-    if (!WEB_APP_URL) return;
+    if (!WEB_APP_URL) return Promise.reject(new Error('尚未設定同步網址'));
     const params = new URLSearchParams();
+    params.append('recordId', data.recordId);
+    params.append('timestamp', data.timestamp);
     params.append('name', data.name);
     params.append('classNum', data.classNum);
     params.append('usage', data.usage);
     params.append('tools', data.tools.join(', '));
     params.append('wish', data.wish);
 
-    fetch(WEB_APP_URL, {
+    return fetch(WEB_APP_URL, {
       method: 'POST',
       mode: 'no-cors',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: params.toString()
-    }).then(() => {
-      console.log('[ AUTO_SYNC ] 通行證資料已同步至試算表！');
-    }).catch(err => console.error('Sync error:', err));
+    });
+  }
+
+  function createRecordId(classNum) {
+    const normalizedClass = classNum.toUpperCase().replace(/[^0-9A-Z]/g, '').slice(0, 10) || 'STUDENT';
+    const randomBytes = new Uint8Array(3);
+    crypto.getRandomValues(randomBytes);
+    const suffix = Array.from(randomBytes, byte => byte.toString(36).padStart(2, '0')).join('').toUpperCase().slice(0, 6);
+    return `2026F-${normalizedClass}-${suffix}`;
   }
 
   // 3.4 學生玩家通行證表單處理 (Student Login & Player Pass)
   const form = document.getElementById('mono-player-form');
   const passResult = document.getElementById('mono-pass-result');
   const printBtn = document.getElementById('print-mono-btn');
+  const downloadBtn = document.getElementById('download-mono-btn');
   const editBtn = document.getElementById('edit-mono-btn');
+  const submitBtn = document.getElementById('generate-pass-btn');
+  const syncStatus = document.getElementById('sync-status');
+  const printablePass = document.getElementById('printable-pass');
 
   const resName = document.getElementById('res-name');
   const resClass = document.getElementById('res-class');
   const resUsage = document.getElementById('res-usage');
   const resTools = document.getElementById('res-tools');
   const resWish = document.getElementById('res-wish');
+  const resRecordId = document.getElementById('res-record-id');
   const passChar = document.getElementById('pass-char');
+
+  function setSyncStatus(message, state) {
+    if (!syncStatus) return;
+    syncStatus.textContent = message;
+    syncStatus.dataset.state = state;
+  }
 
   function renderPass(data) {
     if (resName) resName.textContent = data.name || '--';
@@ -135,6 +154,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (resUsage) resUsage.textContent = data.usage || '--';
     if (resTools) resTools.textContent = data.tools.length > 0 ? data.tools.join(', ') : '自學探索中';
     if (resWish) resWish.textContent = data.wish || '完成專題任務';
+    if (resRecordId) resRecordId.textContent = data.recordId || '--';
     
     if (passChar && data.name) {
       passChar.textContent = data.name.charAt(0).toUpperCase();
@@ -148,12 +168,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const saved = localStorage.getItem('MONO_PLAYER_PASS_DATA');
     if (saved) {
       try {
-        renderPass(JSON.parse(saved));
+        const data = JSON.parse(saved);
+        if (!data.recordId && data.classNum) {
+          data.recordId = createRecordId(data.classNum);
+          localStorage.setItem('MONO_PLAYER_PASS_DATA', JSON.stringify(data));
+        }
+        renderPass(data);
       } catch (e) {}
     }
   }
 
-  form?.addEventListener('submit', (e) => {
+  form?.addEventListener('submit', async (e) => {
     e.preventDefault();
 
     const name = document.getElementById('m-name').value.trim();
@@ -175,13 +200,65 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    const data = { name, classNum, usage: finalUsage, tools, wish, timestamp: new Date().toISOString() };
+    let previousData = null;
+    try {
+      previousData = JSON.parse(localStorage.getItem('MONO_PLAYER_PASS_DATA') || 'null');
+    } catch (error) {
+      console.warn('Saved player pass data could not be read.', error);
+    }
+    const recordId = previousData?.classNum === classNum && previousData?.recordId
+      ? previousData.recordId
+      : createRecordId(classNum);
+    const data = { recordId, name, classNum, usage: finalUsage, tools, wish, timestamp: new Date().toISOString() };
     localStorage.setItem('MONO_PLAYER_PASS_DATA', JSON.stringify(data));
-    
-    // 動態同步寫入 Google 試算表（支援重複提交覆蓋）
-    directSyncToSpreadsheet(data);
-    
     renderPass(data);
+
+    submitBtn.disabled = true;
+    submitBtn.setAttribute('aria-busy', 'true');
+    setSyncStatus('正在同步課程紀錄…', 'sending');
+    try {
+      await directSyncToSpreadsheet(data);
+      setSyncStatus(`同步請求已送出｜紀錄碼：${recordId}`, 'success');
+    } catch (error) {
+      console.error('Sync error:', error);
+      setSyncStatus('同步未完成，資料仍保存在這台電腦；請稍後再次送出。', 'error');
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.removeAttribute('aria-busy');
+    }
+  });
+
+  downloadBtn?.addEventListener('click', async () => {
+    const saved = JSON.parse(localStorage.getItem('MONO_PLAYER_PASS_DATA') || 'null');
+    if (!saved || !printablePass) return;
+    if (typeof html2canvas !== 'function') {
+      setSyncStatus('圖片工具載入失敗，請重新整理後再試。', 'error');
+      return;
+    }
+
+    downloadBtn.disabled = true;
+    downloadBtn.setAttribute('aria-busy', 'true');
+    setSyncStatus('正在製作 PNG 圖片…', 'sending');
+    try {
+      const canvas = await html2canvas(printablePass, {
+        scale: 2,
+        backgroundColor: '#ffffff',
+        useCORS: true,
+        logging: false
+      });
+      const link = document.createElement('a');
+      const safeClass = saved.classNum.replace(/[^0-9A-Za-z\u4e00-\u9fff]/g, '_');
+      link.download = `${safeClass}_PlayerPass_${saved.recordId}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+      setSyncStatus(`PNG 已下載｜檔名包含紀錄碼 ${saved.recordId}`, 'success');
+    } catch (error) {
+      console.error('PNG export error:', error);
+      setSyncStatus('PNG 製作失敗，請使用「列印 / 另存 PDF」備用。', 'error');
+    } finally {
+      downloadBtn.disabled = false;
+      downloadBtn.removeAttribute('aria-busy');
+    }
   });
 
   printBtn?.addEventListener('click', () => {

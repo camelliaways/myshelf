@@ -11,6 +11,7 @@
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;700&family=Orbitron:wght@400;700;900&family=Noto+Serif+TC:wght@400;700;900&display=swap" rel="stylesheet">
   
   <link rel="stylesheet" href="style.css">
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
 </head>
 <body class="retro-theme">
   <!-- CRT 掃描線效果疊加層 -->
@@ -73,19 +74,15 @@
         </div>
       </div>
 
-      <!-- 詩詞渲染區 -->
-      <div class="poem-wrapper">
+      <!-- 詩詞渲染區，設為 position: relative 作為定位錨點 -->
+      <div class="poem-wrapper" style="position: relative;">
         <h2 id="poem-title" class="poem-header"></h2>
         <div id="poem-author" class="poem-sub"></div>
         <div id="text-display" class="typing-text-display">
           <!-- 字元會動態在這裡生成 -->
         </div>
-
-        <!-- 顯式的輸入框，讓中打組字過程可見，支援詞彙輸入與確認送出 -->
-        <div class="input-container border-thin">
-          <span class="prompt">&gt;_</span>
-          <input type="text" id="typing-input" class="visible-typing-input" placeholder="請在此處輸入中文..." autocomplete="off" autofocus>
-        </div>
+        <!-- 覆蓋型輸入框移到此處（與 text-display 是兄弟關係，不會被 initGame 清空） -->
+        <input type="text" id="typing-input" autocomplete="off" autofocus>
       </div>
     </main>
 
@@ -97,16 +94,49 @@
         <div class="console-body">
           <p class="status-msg">&gt; 鍵盤音效已載入。請切換為中文輸入法，開始輸入黃色標記字元。</p>
           <p class="status-msg text-dim">&gt; 中打提示：直接打出對應中文。打字熟練度關係到系統生存度！</p>
-          <div class="console-actions">
+          <div class="console-actions" style="display: flex; gap: 16px; align-items: center; flex-wrap: wrap;">
             <button id="reset-game-btn" class="retro-btn btn-sm">[ ✏️ RESTART // 重來 ]</button>
-            <button id="toggle-sound-btn" class="retro-btn btn-sm">[ 🔊 SOUND: ON ]</button>
+            <div style="display: flex; align-items: center; gap: 6px;">
+              <span class="text-dim">音效 SOUND:</span>
+              <select id="sound-mode-select" class="class-select-mini" style="padding: 4px 8px; font-size: 0.75rem; cursor: pointer;">
+                <option value="retro-beep" selected>👾 街機連擊 (節奏升階)</option>
+                <option value="silent">🔇 靜音模式</option>
+              </select>
+            </div>
           </div>
         </div>
       </div>
 
-      <!-- 本地課堂排行榜 -->
-      <div class="leaderboard-box border-thin font-mono">
-        <div class="box-title">[ TOP_PLAYERS_LEADERBOARD ]</div>
+      <!-- 即時雲端排行榜 (Firebase Real-time Board) -->
+      <div id="leaderboard-container" class="leaderboard-box border-thin font-mono">
+        <div class="box-title-container">
+          <span class="box-title">[ TOP_PLAYERS_LEADERBOARD ]</span>
+          <div class="leaderboard-tabs">
+            <button id="tab-all-grade" class="tab-btn active">[ 🌐 全校總排行 ]</button>
+            <button id="tab-class-only" class="tab-btn">[ 🏫 班級排行 ]</button>
+            <select id="leaderboard-class-select" class="class-select-mini" style="display: none;">
+              <option value="801">801 班</option>
+              <option value="802">802 班</option>
+              <option value="803">803 班</option>
+              <option value="804">804 班</option>
+              <option value="805">805 班</option>
+              <option value="806">806 班</option>
+              <option value="807">807 班</option>
+              <option value="808">808 班</option>
+              <option value="809">809 班</option>
+              <option value="810">810 班</option>
+              <option value="811">811 班</option>
+              <option value="812">812 班</option>
+              <option value="813">813 班</option>
+              <option value="814">814 班</option>
+              <option value="815">815 班</option>
+              <option value="816">816 班</option>
+              <option value="817">817 班</option>
+              <option value="818">818 班</option>
+            </select>
+            <button id="toggle-fullscreen-btn" class="retro-btn btn-sm" style="margin-left: 12px; padding: 2px 6px;">[ 📺 投影大螢幕 ]</button>
+          </div>
+        </div>
         <div class="leaderboard-body">
           <table class="leaderboard-table">
             <thead>
@@ -156,6 +186,10 @@
   <!-- 回首頁按鈕 -->
   <a href="../index.html" class="back-home-badge font-mono">[ &larr; BACK_TO_PROFILE // 返回主頁 ]</a>
 
+  <!-- Firebase App & Database 雲端即時資料庫 SDK (Compat 版本適用於靜態網頁) -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+  
   <script src="script.js"></script>
 </body>
 </html>

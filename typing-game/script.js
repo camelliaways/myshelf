@@ -4,6 +4,35 @@
 
 document.addEventListener('DOMContentLoaded', () => {
 
+  // 0. Firebase 雲端即時資料庫設定 (請更換為您的 Firebase 專案設定)
+  // 老師只需在此貼上 Firebase Console 取得的配置，即可啟動全校即時電競排行！
+  const firebaseConfig = {
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+    databaseURL: "https://YOUR_PROJECT_ID-default-rtdb.firebaseio.com",
+    projectId: "YOUR_PROJECT_ID",
+    storageBucket: "YOUR_PROJECT_ID.appspot.com",
+    messagingSenderId: "YOUR_SENDER_ID",
+    appId: "YOUR_APP_ID"
+  };
+
+  let database = null;
+  let useFirebase = false;
+
+  // 偵測是否已設定 Firebase，若為預設值則自動啟用 LocalStorage 本地備援
+  if (firebaseConfig.apiKey !== "YOUR_API_KEY") {
+    try {
+      firebase.initializeApp(firebaseConfig);
+      database = firebase.database();
+      useFirebase = true;
+      console.log("[ FIREBASE ] 雲端即時資料庫連線成功！");
+    } catch (e) {
+      console.error("[ FIREBASE ] 連線失敗，改用 LocalStorage 備援模式。", e);
+    }
+  } else {
+    console.log("[ SYSTEM ] Firebase 未配置，使用本地 LocalStorage 備援模式。");
+  }
+
   // 1. 古詩資料庫 (Poetry Database)
   const POEMS = [
     {
@@ -48,9 +77,16 @@ document.addEventListener('DOMContentLoaded', () => {
   const timeBar = document.getElementById('time-bar');
   
   const resetBtn = document.getElementById('reset-game-btn');
-  const toggleSoundBtn = document.getElementById('toggle-sound-btn');
+  const soundModeSelect = document.getElementById('sound-mode-select');
   const levelBtns = document.querySelectorAll('.level-btn');
   const leaderboardRows = document.getElementById('leaderboard-rows');
+  
+  // 排行榜控制與切換元素
+  const leaderboardContainer = document.getElementById('leaderboard-container');
+  const tabAllGrade = document.getElementById('tab-all-grade');
+  const tabClassOnly = document.getElementById('tab-class-only');
+  const classFilterSelect = document.getElementById('leaderboard-class-select');
+  const toggleFullscreenBtn = document.getElementById('toggle-fullscreen-btn');
   
   // 成績 Modal
   const scoreModal = document.getElementById('score-modal');
@@ -78,38 +114,322 @@ document.addEventListener('DOMContentLoaded', () => {
   let correctCount = 0;
   let mistakeCount = 0;
   let comboCount = 0;
-  let soundEnabled = true;
+  let soundMode = 'retro-beep'; // 'retro-beep', 'silent'
   let isGameOver = false;
 
-  // Web Audio API 鍵盤音效播放器
+  // Web Audio API 鍵盤音效播放器 (多模音效：支援機械青軸、復古打字機、電子嗶嗶音)
   let audioCtx = null;
+  let noiseBuffer = null;
+  let masterGain = null;
+  const audioBuffers = {}; // 快取解碼後的 AudioBuffer 實體
+
+  // 實體錄音檔位址 (分別對應經典青軸、打字機與叮鈴聲)
+  const SOUND_URLS = {
+    mech_click: 'https://assets.mixkit.co/active_storage/sfx/2568/2568-84.wav',
+    mech_space: 'https://assets.mixkit.co/active_storage/sfx/2568/2568-84.wav',
+    
+    type_click: 'https://www.soundjay.com/communication/sounds/typewriter-key-1.mp3',
+    type_space: 'https://www.soundjay.com/communication/sounds/typewriter-key-space-1.mp3',
+    
+    bell: 'https://www.soundjay.com/communication/sounds/typewriter-bell-1.mp3'
+  };
+
   function initAudio() {
     if (!audioCtx) {
       audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      createNoiseBuffer();
+      masterGain = audioCtx.createGain();
+      masterGain.gain.value = 0.72;
+      const compressor = audioCtx.createDynamicsCompressor();
+      compressor.threshold.value = -18;
+      compressor.knee.value = 12;
+      compressor.ratio.value = 5;
+      compressor.attack.value = 0.002;
+      compressor.release.value = 0.12;
+      masterGain.connect(compressor);
+      compressor.connect(audioCtx.destination);
+    }
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+  }
+
+  // 預先異步加載所有實體音訊檔，以確保打字時「零延遲」發聲
+  function preLoadSounds() {
+    if (!audioCtx) return;
+    
+    Object.entries(SOUND_URLS).forEach(([key, url]) => {
+      fetch(url)
+        .then(response => {
+          if (!response.ok) throw new Error("Network response was not ok");
+          return response.arrayBuffer();
+        })
+        .then(arrayBuffer => audioCtx.decodeAudioData(arrayBuffer))
+        .then(decodedBuffer => {
+          audioBuffers[key] = decodedBuffer;
+          console.log(`[ SOUND_SYSTEM ] 音效 ${key} 加載並快取完成！`);
+        })
+        .catch(err => {
+          console.warn(`[ SOUND_SYSTEM ] ${key} 實體檔加載失敗，已備妥合成音作為降級方案。`);
+        });
+    });
+  }
+
+  // 播放實體快取音效
+  function playBufferSound(key, rate = 1.0) {
+    if (soundMode === 'silent') return;
+    initAudio();
+    if (!audioCtx) return;
+
+    const buffer = audioBuffers[key];
+    if (buffer) {
+      try {
+        const source = audioCtx.createBufferSource();
+        source.buffer = buffer;
+        source.playbackRate.value = rate;
+
+        const gainNode = audioCtx.createGain();
+        gainNode.gain.value = key === 'bell' ? 0.35 : 0.65; // 調高音效，打起來更帶感
+
+        source.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+        source.start(0);
+      } catch (e) {
+        console.error("Buffer play error:", e);
+      }
+    } else {
+      // 降級方案：若實體錄音檔尚未下載完畢或失敗（例如本地 file:// 測試被跨網域阻擋），使用對應的合成音
+      if (key.startsWith('mech_')) {
+        playSynthMechanicalClick(key.includes('space'));
+      } else if (key.startsWith('type_')) {
+        playSynthTypewriterClick(key.includes('space'));
+      } else if (key === 'bell') {
+        playSynthTypewriterBell();
+      }
     }
   }
 
-  function playSound(pitch, duration, type = 'sine') {
-    if (!soundEnabled) return;
+  // 1. 打字鍵敲擊音效分流
+  function playTypewriterClick(isSpace = false, hitCount = 1) {
+    if (soundMode === 'silent') return;
     initAudio();
+    const burstCount = Math.min(hitCount, 5);
+    for (let i = 0; i < burstCount; i++) {
+      const time = audioCtx.currentTime + i * 0.032;
+      if (soundMode === 'mechanical') playPunchyMechanical(time, isSpace);
+      else if (soundMode === 'typewriter') playMetalTypewriter(time, isSpace);
+      else if (soundMode === 'retro-beep') playArcadeCombo(time, isSpace);
+    }
+  }
+
+  // 2. 打錯字音效分流
+  function playTypewriterError() {
+    if (soundMode === 'silent') return;
+    initAudio();
+    const now = audioCtx.currentTime;
+    playNoiseLayer(now, 310, 1.2, 0.1, 0.055);
+    playToneLayer(now, 'triangle', 125, 78, 0.09, 0.085);
+  }
+
+  // 3. 通關換行鈴聲分流
+  function playTypewriterBell() {
+    if (soundMode === 'silent') return;
+    initAudio();
+    const now = audioCtx.currentTime;
+    if (soundMode === 'retro-beep') {
+      [523.25, 659.25, 783.99, 1046.5].forEach((frequency, index) => {
+        playToneLayer(now + index * 0.055, 'square', frequency, frequency * 0.995, 0.06, 0.13);
+      });
+    } else {
+      playNoiseLayer(now, 820, 1.1, 0.09, 0.07);
+      playToneLayer(now + 0.025, 'sine', 2350, 2180, 0.13, 0.42);
+      playToneLayer(now + 0.035, 'sine', 1175, 1080, 0.07, 0.32);
+      playToneLayer(now + 0.16, 'triangle', 175, 92, 0.1, 0.14);
+    }
+  }
+
+  // ================= 備用合成音效 (Fallback Synthesizers) =================
+  // 用於網路尚未載入完成、離線或直接打開 HTML 檔案 (file://) 的備份，確保每個模式聽起來不同！
+
+  // 建立白噪音 Buffer (複用)
+  function createNoiseBuffer() {
     if (!audioCtx) return;
-    
+    const bufferSize = audioCtx.sampleRate * 0.1;
+    noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+    const data = noiseBuffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) {
+      data[i] = Math.random() * 2 - 1;
+    }
+  }
+
+  function playNoiseLayer(time, frequency, q, volume, duration) {
+    const source = audioCtx.createBufferSource();
+    const filter = audioCtx.createBiquadFilter();
+    const gain = audioCtx.createGain();
+    source.buffer = noiseBuffer;
+    filter.type = 'bandpass';
+    filter.frequency.value = frequency;
+    filter.Q.value = q;
+    gain.gain.setValueAtTime(volume, time);
+    gain.gain.exponentialRampToValueAtTime(0.001, time + duration);
+    source.connect(filter);
+    filter.connect(gain);
+    gain.connect(masterGain);
+    source.start(time);
+    source.stop(time + duration + 0.01);
+  }
+
+  function playToneLayer(time, type, startFrequency, endFrequency, volume, duration) {
+    const oscillator = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    oscillator.type = type;
+    oscillator.frequency.setValueAtTime(startFrequency, time);
+    oscillator.frequency.exponentialRampToValueAtTime(endFrequency, time + duration);
+    gain.gain.setValueAtTime(volume, time);
+    gain.gain.exponentialRampToValueAtTime(0.001, time + duration);
+    oscillator.connect(gain);
+    gain.connect(masterGain);
+    oscillator.start(time);
+    oscillator.stop(time + duration + 0.01);
+  }
+
+  // 厚實段落軸：短促上蓋聲、低頻觸底及細小回彈。
+  function playPunchyMechanical(time, isSpace) {
+    const variation = 0.92 + Math.random() * 0.16;
+    playNoiseLayer(time, (isSpace ? 620 : 1450) * variation, 1.4, isSpace ? 0.13 : 0.105, 0.026);
+    playToneLayer(time, 'triangle', isSpace ? 190 : 330, isSpace ? 105 : 170, isSpace ? 0.12 : 0.075, 0.038);
+    playToneLayer(time + 0.009, 'sine', 2100 * variation, 1250 * variation, 0.025, 0.018);
+  }
+
+  // 金屬打字機：字槌撞擊、機身共鳴與回彈三層聲響。
+  function playMetalTypewriter(time, isSpace) {
+    const variation = 0.9 + Math.random() * 0.2;
+    playNoiseLayer(time, (isSpace ? 520 : 980) * variation, 1.1, isSpace ? 0.14 : 0.12, 0.032);
+    playToneLayer(time, 'triangle', isSpace ? 150 : 240, isSpace ? 85 : 120, isSpace ? 0.13 : 0.09, 0.052);
+    playToneLayer(time + 0.004, 'square', 1850 * variation, 920 * variation, 0.026, 0.022);
+    playNoiseLayer(time + 0.026, 2600 * variation, 3.5, 0.028, 0.018);
+  }
+
+  // 街機連擊：Combo 越高，確認音階越往上推進。
+  function playArcadeCombo(time, isSpace) {
+    const scale = [0, 3, 5, 7, 10, 12];
+    const note = scale[Math.min(scale.length - 1, Math.floor(comboCount / 4))];
+    const base = (isSpace ? 150 : 230) * Math.pow(2, note / 12);
+    playToneLayer(time, 'square', base * 2.02, base * 1.5, 0.052, 0.045);
+    playToneLayer(time, 'triangle', base, base * 0.72, 0.085, 0.065);
+    playNoiseLayer(time, 1900, 2.2, 0.025, 0.018);
+  }
+
+  // A. 備用「機械鍵盤」合成音：清脆高頻塑膠撞擊 "咔"
+  function playSynthMechanicalClick(isSpace = false) {
     try {
+      const now = audioCtx.currentTime;
       const osc = audioCtx.createOscillator();
-      const gainNode = audioCtx.createGain();
+      const gain = audioCtx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(isSpace ? 450 : 2200, now); // 高頻點擊音
       
-      osc.type = type;
-      osc.frequency.value = pitch;
+      gain.gain.setValueAtTime(isSpace ? 0.12 : 0.08, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.02);
       
-      gainNode.gain.setValueAtTime(0.08, audioCtx.currentTime);
-      gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start(now);
+      osc.stop(now + 0.03);
+    } catch(e){}
+  }
+
+  // B. 備用「復古打字機」合成音：低重度帶通噪聲 "哐"
+  function playSynthTypewriterClick(isSpace = false) {
+    try {
+      const now = audioCtx.currentTime;
+      if (noiseBuffer) {
+        const noise = audioCtx.createBufferSource();
+        noise.buffer = noiseBuffer;
+        const filter = audioCtx.createBiquadFilter();
+        filter.type = 'bandpass';
+        filter.frequency.value = isSpace ? 350 : 750; // 中低頻重音
+        filter.Q.value = 2.0;
+        
+        const gain = audioCtx.createGain();
+        gain.gain.setValueAtTime(isSpace ? 0.22 : 0.16, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.04);
+        
+        noise.connect(filter);
+        filter.connect(gain);
+        gain.connect(audioCtx.destination);
+        noise.start(now);
+        noise.stop(now + 0.05);
+      }
+    } catch(e){}
+  }
+
+  // C. 備用「電子音」合成音：經典方波 beep beep
+  function playSynthRetroBeep(isSpace = false) {
+    try {
+      const now = audioCtx.currentTime;
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'square'; // 經典 8-bit 方波
+      osc.frequency.setValueAtTime(isSpace ? 300 : 580, now);
       
-      osc.connect(gainNode);
-      gainNode.connect(audioCtx.destination);
+      gain.gain.setValueAtTime(0.04, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.06);
       
-      osc.start();
-      osc.stop(audioCtx.currentTime + duration);
-    } catch (e) {}
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start(now);
+      osc.stop(now + 0.07);
+    } catch(e){}
+  }
+
+  // D. 備用電子錯誤音
+  function playSynthRetroError() {
+    try {
+      const now = audioCtx.currentTime;
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(100, now);
+      gain.gain.setValueAtTime(0.06, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start(now);
+      osc.stop(now + 0.16);
+    } catch(e){}
+  }
+
+  // E. 備用電子通關鈴聲
+  function playSynthRetroBell() {
+    try {
+      const now = audioCtx.currentTime;
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(988, now); // B5 階音
+      gain.gain.setValueAtTime(0.12, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start(now);
+      osc.stop(now + 0.4);
+    } catch(e){}
+  }
+
+  // F. 備用打字機鈴聲
+  function playSynthTypewriterBell() {
+    try {
+      const now = audioCtx.currentTime;
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(2500, now);
+      gain.gain.setValueAtTime(0.1, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start(now);
+      osc.stop(now + 0.5);
+    } catch(e){}
   }
 
   // 4. 載入並初始化關卡
@@ -165,8 +485,25 @@ document.addEventListener('DOMContentLoaded', () => {
     
     typingInput.value = '';
     updateHUD();
-    loadLeaderboard();
+    initRealtimeLeaderboardListener();
+    
+    // 等待 DOM 渲染完畢後對齊輸入游標
+    setTimeout(alignInputWithCurrentChar, 50);
   }
+
+  function alignInputWithCurrentChar() {
+    if (isGameOver) return;
+    const currentChar = charElements[currentIndex];
+    if (currentChar && typingInput) {
+      // 使用 offsetLeft 與 offsetTop，這兩者是相對於父容器 (#text-display) 的精確相對坐標
+      // 如此一來，不管頁面如何滾動，綠色輸入框都絕對不會跑位！
+      typingInput.style.left = `${currentChar.offsetLeft + (currentChar.offsetWidth / 2)}px`;
+      typingInput.style.top = `${currentChar.offsetTop}px`;
+    }
+  }
+
+  // 監聽視窗縮放以確保游標位置正確
+  window.addEventListener('resize', alignInputWithCurrentChar);
 
   function isPunctuation(char) {
     const punct = ["，", "。", "、", "；", "：", "？", "！", "（", "）", "(", ")", " "];
@@ -256,7 +593,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (matchedCount > 0) {
       // 成功打對字
-      playSound(780, 0.06); // 清脆鍵盤音
+      playTypewriterClick(false, matchedCount);
       correctCount += matchedCount;
       comboCount += matchedCount;
 
@@ -272,6 +609,8 @@ document.addEventListener('DOMContentLoaded', () => {
       
       if (currentIndex < poemChars.length) {
         charElements[currentIndex].classList.add('current');
+        // 游標對齊新字元
+        alignInputWithCurrentChar();
       } else {
         // 完成整首詩！
         endGame(true);
@@ -280,7 +619,7 @@ document.addEventListener('DOMContentLoaded', () => {
       // 如果輸入框已經有完整中文字，但卻與目標字不符（打錯字）
       const trimmed = value.trim();
       if (trimmed.length > 0 && !isComposing) {
-        playSound(140, 0.15, 'sawtooth'); // 低沉錯誤音
+        playTypewriterError();
         charElements[currentIndex].classList.add('incorrect');
         setTimeout(() => {
           if (charElements[currentIndex]) {
@@ -289,6 +628,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 300);
         mistakeCount++;
         comboCount = 0; // Combo 中斷
+        // 清空打錯的內容，讓學生重新打
+        typingInput.value = '';
       }
     }
 
@@ -312,7 +653,7 @@ document.addEventListener('DOMContentLoaded', () => {
     isGameOver = true;
     
     if (isSuccess) {
-      playSound(1000, 0.3);
+      playTypewriterBell();
       // 跳出登記視窗
       modalWpm.textContent = calculateWPM();
       modalAcc.textContent = `${calculateAcc()}%`;
@@ -330,46 +671,109 @@ document.addEventListener('DOMContentLoaded', () => {
 
       scoreModal.style.display = 'flex';
     } else {
-      playSound(120, 0.6, 'sawtooth');
+      playTypewriterError();
       alert('系統超載！時間已到，挑戰失敗。請點擊重來再次嘗試！');
     }
   }
 
-  // 8. 本地與雲端排行榜處理 (Leaderboard)
-  function loadLeaderboard() {
-    const key = `LEADERBOARD_POEM_${currentPoemId}`;
-    const data = JSON.parse(localStorage.getItem(key) || '[]');
+  // 8. 雲端即時與本地備援排行榜處理 (Leaderboard)
+  let activeTab = 'all-grade'; // 'all-grade' 或 'class-only'
+  let currentLeaderboardData = []; // 儲存當前加載的完整數據
+
+  // 監聽 Firebase 資料庫變化並自動重新渲染排行榜 (即時電競感)
+  function initRealtimeLeaderboardListener() {
+    if (!useFirebase || !database) {
+      loadLocalStorageLeaderboard();
+      return;
+    }
     
-    // 依 WPM 排序
-    data.sort((a, b) => b.wpm - a.wpm);
+    const scoresRef = database.ref('leaderboards/poem_' + currentPoemId);
+    scoresRef.off(); // 移除舊的監聽
     
+    // 即時抓取最新成績 (限 100 筆，照速度排序)
+    scoresRef.on('value', (snapshot) => {
+      currentLeaderboardData = [];
+      snapshot.forEach((child) => {
+        currentLeaderboardData.push(child.val());
+      });
+      // 降序排序 (WPM 高者在前)
+      currentLeaderboardData.sort((a, b) => b.wpm - a.wpm);
+      renderLeaderboardTable(currentLeaderboardData);
+    }, (error) => {
+      console.warn("Firebase read error, using local fallback:", error);
+      loadLocalStorageLeaderboard();
+    });
+  }
+
+  // 渲染排行榜表格的實體方法
+  function renderLeaderboardTable(dataList) {
     leaderboardRows.innerHTML = '';
-    if (data.length === 0) {
+    
+    let filteredData = dataList;
+    if (activeTab === 'class-only') {
+      const targetClass = classFilterSelect.value;
+      filteredData = dataList.filter(item => {
+        return item.classNum && item.classNum.includes(targetClass);
+      });
+    }
+    
+    if (filteredData.length === 0) {
       leaderboardRows.innerHTML = '<tr><td colspan="5" style="text-align:center; color:var(--retro-text-muted);">[ 無數據 // NO_DATA ]</td></tr>';
       return;
     }
-
-    data.slice(0, 5).forEach((row, i) => {
+    
+    // 廣播大螢幕模式顯示前 10 名，普通模式顯示前 5 名
+    const limit = leaderboardContainer.classList.contains('fullscreen-mode') ? 10 : 5;
+    
+    filteredData.slice(0, limit).forEach((row, i) => {
       const tr = document.createElement('tr');
       tr.innerHTML = `
         <td>0${i + 1}</td>
         <td>${row.name}</td>
         <td>${row.classNum}</td>
-        <td style="color:var(--neon-green); font-weight:700;">${row.wpm}</td>
+        <td style="color:var(--neon-green); font-weight:700; font-size:1.15em;">${row.wpm}</td>
         <td>${row.acc}%</td>
       `;
       leaderboardRows.appendChild(tr);
     });
   }
 
-  // 儲存至本地排行
-  function saveLocalScore(name, classNum, wpm, acc) {
+  // 本地 LocalStorage 備用資料讀取
+  function loadLocalStorageLeaderboard() {
     const key = `LEADERBOARD_POEM_${currentPoemId}`;
-    const data = JSON.parse(localStorage.getItem(key) || '[]');
-    
-    data.push({ name, classNum, wpm, acc, timestamp: new Date().toISOString() });
-    localStorage.setItem(key, JSON.stringify(data));
-    loadLeaderboard();
+    currentLeaderboardData = JSON.parse(localStorage.getItem(key) || '[]');
+    currentLeaderboardData.sort((a, b) => b.wpm - a.wpm);
+    renderLeaderboardTable(currentLeaderboardData);
+  }
+
+  // 儲存打字成績
+  function saveScore(name, classNum, wpm, acc) {
+    const scoreItem = {
+      name,
+      classNum,
+      wpm,
+      acc,
+      timestamp: new Date().toISOString()
+    };
+
+    // 1. 寫入本地 LocalStorage (備用)
+    const key = `LEADERBOARD_POEM_${currentPoemId}`;
+    const localData = JSON.parse(localStorage.getItem(key) || '[]');
+    localData.push(scoreItem);
+    localStorage.setItem(key, JSON.stringify(localData));
+
+    // 2. 寫入 Firebase 即時資料庫 (即時電競)
+    if (useFirebase && database) {
+      try {
+        // 使用 push 建立唯一的 Firebase 節點並寫入
+        database.ref('leaderboards/poem_' + currentPoemId).push(scoreItem);
+      } catch (e) {
+        console.error("Firebase write error:", e);
+      }
+    } else {
+      // 離線狀態直接渲染本地排行
+      loadLocalStorageLeaderboard();
+    }
   }
 
   // 背景非同步發送至 Google 試算表（整合紀錄學生的打字進度）
@@ -379,10 +783,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const params = new URLSearchParams();
     params.append('name', name);
     params.append('classNum', classNum);
-    // 將打字關卡成績併入使用習慣與作業中發送
-    params.append('usage', `打字挑戰《${POEMS[currentPoemId].title}》: ${wpm} WPM (準確度: ${acc}%)`);
+    params.append('usage', `打字挑戰《${POEMS[currentPoemId].text.substring(0, 5)}...》: ${wpm} WPM (準確度: ${acc}%)`);
     params.append('tools', 'Poetry Lab 打字遊戲');
-    params.append('wish', `成功解鎖打字挑戰！`);
+    params.append('wish', `打字挑戰解鎖成功！`);
 
     fetch(WEB_APP_URL, {
       method: 'POST',
@@ -423,10 +826,9 @@ document.addEventListener('DOMContentLoaded', () => {
     typingInput.focus();
   });
 
-  // 音效開關
-  toggleSoundBtn.addEventListener('click', () => {
-    soundEnabled = !soundEnabled;
-    toggleSoundBtn.textContent = soundEnabled ? '[ 🔊 SOUND: ON ]' : '[ 🔇 SOUND: OFF ]';
+  // 音效選擇切換
+  soundModeSelect.addEventListener('change', () => {
+    soundMode = soundModeSelect.value;
     typingInput.focus();
   });
 
@@ -438,21 +840,54 @@ document.addEventListener('DOMContentLoaded', () => {
   // 登記送出
   submitScoreBtn.addEventListener('click', () => {
     const name = playerNameInput.value.trim();
-    const classNum = playerClassInput.value.trim();
+    const classVal = playerClassInput.value.trim();
     const wpm = calculateWPM();
     const acc = calculateAcc();
 
-    if (!name || !classNum) {
+    if (!name || !classVal) {
       alert('請填寫呼號與班級！');
       return;
     }
 
-    // 儲存並同步
-    saveLocalScore(name, classNum, wpm, acc);
-    syncScoreToGoogleSheets(name, classNum, wpm, acc);
+    // 儲存並同步到 Firebase、LocalStorage，並備份到 Google Sheets
+    saveScore(name, classVal, wpm, acc);
+    syncScoreToGoogleSheets(name, classVal, wpm, acc);
     
     scoreModal.style.display = 'none';
     alert('挑戰紀錄已登錄！');
+  });
+
+  // 排行榜頁籤切換
+  tabAllGrade?.addEventListener('click', () => {
+    tabAllGrade.classList.add('active');
+    tabClassOnly.classList.remove('active');
+    classFilterSelect.style.display = 'none';
+    activeTab = 'all-grade';
+    renderLeaderboardTable(currentLeaderboardData);
+  });
+
+  tabClassOnly?.addEventListener('click', () => {
+    tabClassOnly.classList.add('active');
+    tabAllGrade.classList.remove('active');
+    classFilterSelect.style.display = 'inline-block';
+    activeTab = 'class-only';
+    renderLeaderboardTable(currentLeaderboardData);
+  });
+
+  classFilterSelect?.addEventListener('change', () => {
+    renderLeaderboardTable(currentLeaderboardData);
+  });
+
+  // 廣播大螢幕模式切換
+  toggleFullscreenBtn?.addEventListener('click', () => {
+    leaderboardContainer.classList.toggle('fullscreen-mode');
+    if (leaderboardContainer.classList.contains('fullscreen-mode')) {
+      toggleFullscreenBtn.textContent = '[ ✖️ 關閉大螢幕 ]';
+    } else {
+      toggleFullscreenBtn.textContent = '[ 📺 投影大螢幕 ]';
+    }
+    // 重新渲染表格以配合行數上限 (大螢幕顯示 10 筆，小螢幕 5 筆)
+    renderLeaderboardTable(currentLeaderboardData);
   });
 
   // 啟動遊戲
