@@ -72,6 +72,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Google Apps Script Sync URL
   const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbx_-OZHwtIXIwLz20hWBMoLD1ffPqyBvzhwCTSf8l4ytAorxBTPljqsmXCkrydGvOIe/exec';
+  const TYPING_PLAYER_PROFILE_KEY = 'TYPING_PLAYER_PROFILE';
 
   // 3. 遊戲內部變數
   let currentPoemId = 0;
@@ -630,17 +631,19 @@ document.addEventListener('DOMContentLoaded', () => {
       // 跳出登記視窗
       modalWpm.textContent = calculateWPM();
       modalAcc.textContent = `${calculateAcc()}%`;
-      playerNameInput.value = '';
-      
-      // 自動載入之前通行證的玩家暱稱與班級
-      const saved = localStorage.getItem('MONO_PLAYER_PASS_DATA');
-      if (saved) {
+      // 優先載入主頁通行證；直接進入遊戲時則載入上次在遊戲內儲存的資料。
+      let savedProfile = null;
+      for (const key of ['MONO_PLAYER_PASS_DATA', TYPING_PLAYER_PROFILE_KEY]) {
         try {
-          const parsed = JSON.parse(saved);
-          playerNameInput.value = parsed.name || '';
-          playerClassInput.value = parsed.classNum || '';
-        } catch (e) {}
+          const parsed = JSON.parse(localStorage.getItem(key) || 'null');
+          if (parsed?.name && parsed?.classNum) {
+            savedProfile = parsed;
+            break;
+          }
+        } catch (error) {}
       }
+      playerNameInput.value = savedProfile?.name || '';
+      playerClassInput.value = savedProfile?.classNum || '';
 
       scoreModal.style.display = 'flex';
       scoreSubmitStatus.textContent = calculateAcc() >= 95 ? '準確率達標，可登錄排行榜。' : '準確率達 95% 才會列入公開排行。';
@@ -854,8 +857,8 @@ document.addEventListener('DOMContentLoaded', () => {
     resetBtn.focus();
   });
 
-  // 登記送出
-  submitScoreBtn.addEventListener('click', async () => {
+  // 儲存成績與學生在本裝置使用的課堂識別資料。
+  async function submitScore() {
     const name = playerNameInput.value.trim();
     const classVal = playerClassInput.value.trim();
     const wpm = calculateWPM();
@@ -869,6 +872,12 @@ document.addEventListener('DOMContentLoaded', () => {
       scoreSubmitStatus.dataset.state = 'error';
       return;
     }
+
+    localStorage.setItem(TYPING_PLAYER_PROFILE_KEY, JSON.stringify({
+      name,
+      classNum: classVal,
+      updatedAt: new Date().toISOString()
+    }));
 
     submitScoreBtn.disabled = true;
     submitScoreBtn.setAttribute('aria-busy', 'true');
@@ -894,6 +903,17 @@ document.addEventListener('DOMContentLoaded', () => {
       submitScoreBtn.disabled = false;
       submitScoreBtn.removeAttribute('aria-busy');
     }
+  }
+
+  submitScoreBtn.addEventListener('click', submitScore);
+
+  [playerNameInput, playerClassInput].forEach(input => {
+    input.addEventListener('keydown', event => {
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        submitScore();
+      }
+    });
   });
 
   document.addEventListener('keydown', event => {
