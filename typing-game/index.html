@@ -107,7 +107,7 @@
         </div>
       </div>
 
-      <!-- 即時雲端排行榜 (Firebase Real-time Board) -->
+      <!-- Google Sheets 雲端排行榜 -->
       <div id="leaderboard-container" class="leaderboard-box border-thin font-mono">
         <div class="box-title-container">
           <span class="box-title">[ TOP_PLAYERS_LEADERBOARD ]</span>
@@ -137,6 +137,8 @@
             <button id="toggle-fullscreen-btn" class="retro-btn btn-sm" style="margin-left: 12px; padding: 2px 6px;">[ 📺 投影大螢幕 ]</button>
           </div>
         </div>
+        <p id="leaderboard-status" class="leaderboard-status" role="status" aria-live="polite">[ 正在載入排行榜… ]</p>
+        <p class="leaderboard-note">公開榜僅顯示課堂暱稱與班級；準確率達 95% 才納入排名，每位學生每關只採最佳成績。</p>
         <div class="leaderboard-body">
           <table class="leaderboard-table">
             <thead>
@@ -158,19 +160,20 @@
   </div>
 
   <!-- 成績登記對話框 (Modal) -->
-  <div id="score-modal" class="modal-overlay" style="display: none;">
+  <div id="score-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="score-modal-title" style="display: none;">
     <div class="modal-content border-medium font-mono">
-      <h3 class="modal-title font-display">[ QUEST_COMPLETED // 任務解鎖成功 ]</h3>
+      <h3 id="score-modal-title" class="modal-title font-display">[ QUEST_COMPLETED // 任務解鎖成功 ]</h3>
       <div class="modal-body">
         <p>你已成功完成挑戰！請登記你的玩家資料：</p>
         <div class="form-row">
           <label for="player-name">呼號 NAME:</label>
-          <input type="text" id="player-name" class="retro-input" placeholder="例如：小明" required>
+          <input type="text" id="player-name" class="retro-input" placeholder="例如：PixelFox（請勿填真名）" maxlength="20" required>
         </div>
         <div class="form-row">
           <label for="player-class">班級座號 CLASS:</label>
-          <input type="text" id="player-class" class="retro-input" placeholder="例如：801 15號" required>
+          <input type="text" id="player-class" class="retro-input" placeholder="例如：801 15號" pattern="(80[1-9]|81[0-8])[^0-9]*[0-9]{1,2}號?" aria-describedby="score-form-hint" required>
         </div>
+        <p id="score-form-hint" class="form-hint">班級限 801～818；完整座號只供教師紀錄，公開榜不顯示座號。</p>
         <div class="stats-summary border-thin">
           <p>打字速度 / SPEED: <strong id="modal-wpm">0</strong> WPM</p>
           <p>準確率 / ACCURACY: <strong id="modal-acc">100%</strong></p>
@@ -180,16 +183,13 @@
         <button id="submit-score-btn" class="retro-btn">[ 💾 SAVE & REGISTER ]</button>
         <button id="close-modal-btn" class="retro-btn btn-outline">[ DISMISS ]</button>
       </div>
+      <p id="score-submit-status" class="form-hint" role="status" aria-live="polite"></p>
     </div>
   </div>
 
   <!-- 回首頁按鈕 -->
   <a href="../index.html" class="back-home-badge font-mono">[ &larr; BACK_TO_PROFILE // 返回主頁 ]</a>
 
-  <!-- Firebase App & Database 雲端即時資料庫 SDK (Compat 版本適用於靜態網頁) -->
-  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
-  
   <script src="script.js"></script>
 </body>
 </html>

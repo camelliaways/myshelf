@@ -354,6 +354,25 @@ body.retro-theme {
   font-size: 0.8rem;
 }
 
+.leaderboard-status,
+.leaderboard-note,
+.form-hint {
+  margin: 10px 16px;
+  color: var(--retro-text-muted);
+  font-size: 0.78rem;
+  line-height: 1.5;
+}
+
+.leaderboard-status[data-state="error"],
+.form-hint[data-state="error"] {
+  color: #ff8f8f;
+}
+
+.leaderboard-status[data-state="success"],
+.form-hint[data-state="success"] {
+  color: var(--neon-green);
+}
+
 .console-body p {
   margin-bottom: 6px;
   line-height: 1.4;

@@ -4,35 +4,6 @@
 
 document.addEventListener('DOMContentLoaded', () => {
 
-  // 0. Firebase 雲端即時資料庫設定 (請更換為您的 Firebase 專案設定)
-  // 老師只需在此貼上 Firebase Console 取得的配置，即可啟動全校即時電競排行！
-  const firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-    databaseURL: "https://YOUR_PROJECT_ID-default-rtdb.firebaseio.com",
-    projectId: "YOUR_PROJECT_ID",
-    storageBucket: "YOUR_PROJECT_ID.appspot.com",
-    messagingSenderId: "YOUR_SENDER_ID",
-    appId: "YOUR_APP_ID"
-  };
-
-  let database = null;
-  let useFirebase = false;
-
-  // 偵測是否已設定 Firebase，若為預設值則自動啟用 LocalStorage 本地備援
-  if (firebaseConfig.apiKey !== "YOUR_API_KEY") {
-    try {
-      firebase.initializeApp(firebaseConfig);
-      database = firebase.database();
-      useFirebase = true;
-      console.log("[ FIREBASE ] 雲端即時資料庫連線成功！");
-    } catch (e) {
-      console.error("[ FIREBASE ] 連線失敗，改用 LocalStorage 備援模式。", e);
-    }
-  } else {
-    console.log("[ SYSTEM ] Firebase 未配置，使用本地 LocalStorage 備援模式。");
-  }
-
   // 1. 古詩資料庫 (Poetry Database)
   const POEMS = [
     {
@@ -87,6 +58,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const tabClassOnly = document.getElementById('tab-class-only');
   const classFilterSelect = document.getElementById('leaderboard-class-select');
   const toggleFullscreenBtn = document.getElementById('toggle-fullscreen-btn');
+  const leaderboardStatus = document.getElementById('leaderboard-status');
   
   // 成績 Modal
   const scoreModal = document.getElementById('score-modal');
@@ -96,6 +68,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const playerClassInput = document.getElementById('player-class');
   const submitScoreBtn = document.getElementById('submit-score-btn');
   const closeModalBtn = document.getElementById('close-modal-btn');
+  const scoreSubmitStatus = document.getElementById('score-submit-status');
 
   // Google Apps Script Sync URL
   const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbx6KKDsk-qNoCaw-03i7enBR6tZLwqZSnEU8n7wpunK2J-f_AlIhmRBR86H4VRqDKnX/exec';
@@ -670,50 +643,55 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       scoreModal.style.display = 'flex';
+      scoreSubmitStatus.textContent = calculateAcc() >= 95 ? '準確率達標，可登錄排行榜。' : '準確率達 95% 才會列入公開排行。';
+      scoreSubmitStatus.dataset.state = '';
+      playerNameInput.focus();
     } else {
       playTypewriterError();
       alert('系統超載！時間已到，挑戰失敗。請點擊重來再次嘗試！');
     }
   }
 
-  // 8. 雲端即時與本地備援排行榜處理 (Leaderboard)
+  // 8. Google Sheets 雲端排行榜與本地備援
   let activeTab = 'all-grade'; // 'all-grade' 或 'class-only'
-  let currentLeaderboardData = []; // 儲存當前加載的完整數據
+  let currentLeaderboardData = [];
 
-  // 監聽 Firebase 資料庫變化並自動重新渲染排行榜 (即時電競感)
-  function initRealtimeLeaderboardListener() {
-    if (!useFirebase || !database) {
-      loadLocalStorageLeaderboard();
-      return;
-    }
-    
-    const scoresRef = database.ref('leaderboards/poem_' + currentPoemId);
-    scoresRef.off(); // 移除舊的監聽
-    
-    // 即時抓取最新成績 (限 100 筆，照速度排序)
-    scoresRef.on('value', (snapshot) => {
-      currentLeaderboardData = [];
-      snapshot.forEach((child) => {
-        currentLeaderboardData.push(child.val());
-      });
-      // 降序排序 (WPM 高者在前)
-      currentLeaderboardData.sort((a, b) => b.wpm - a.wpm);
+  function setLeaderboardStatus(message, state = '') {
+    if (!leaderboardStatus) return;
+    leaderboardStatus.textContent = message;
+    leaderboardStatus.dataset.state = state;
+  }
+
+  async function initRealtimeLeaderboardListener() {
+    setLeaderboardStatus('[ 正在載入雲端排行榜… ]');
+    try {
+      const url = new URL(WEB_APP_URL);
+      url.searchParams.set('action', 'leaderboard');
+      url.searchParams.set('poemId', String(currentPoemId));
+      url.searchParams.set('_', String(Date.now()));
+      const response = await fetch(url.toString(), { cache: 'no-store' });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const payload = await response.json();
+      if (!payload.success || !Array.isArray(payload.players)) throw new Error(payload.error || '排行榜格式不正確');
+      currentLeaderboardData = payload.players;
       renderLeaderboardTable(currentLeaderboardData);
-    }, (error) => {
-      console.warn("Firebase read error, using local fallback:", error);
+      setLeaderboardStatus(`[ 雲端排行榜已更新｜合格紀錄 ${payload.players.length} 筆 ]`, 'success');
+    } catch (error) {
+      console.warn('Cloud leaderboard unavailable, using local fallback:', error);
       loadLocalStorageLeaderboard();
-    });
+      setLeaderboardStatus('[ 雲端排行榜尚未啟用｜目前顯示此電腦的暫存紀錄 ]', 'error');
+    }
   }
 
   // 渲染排行榜表格的實體方法
   function renderLeaderboardTable(dataList) {
     leaderboardRows.innerHTML = '';
     
-    let filteredData = dataList;
+    let filteredData = dataList.filter(item => Number(item.acc) >= 95);
     if (activeTab === 'class-only') {
       const targetClass = classFilterSelect.value;
       filteredData = dataList.filter(item => {
-        return item.classNum && item.classNum.includes(targetClass);
+        return item.classCode === targetClass;
       });
     }
     
@@ -730,7 +708,7 @@ document.addEventListener('DOMContentLoaded', () => {
       tr.innerHTML = `
         <td>0${i + 1}</td>
         <td>${row.name}</td>
-        <td>${row.classNum}</td>
+        <td>${row.classCode || extractClassCode(row.classNum) || '--'}</td>
         <td style="color:var(--neon-green); font-weight:700; font-size:1.15em;">${row.wpm}</td>
         <td>${row.acc}%</td>
       `;
@@ -741,16 +719,32 @@ document.addEventListener('DOMContentLoaded', () => {
   // 本地 LocalStorage 備用資料讀取
   function loadLocalStorageLeaderboard() {
     const key = `LEADERBOARD_POEM_${currentPoemId}`;
-    currentLeaderboardData = JSON.parse(localStorage.getItem(key) || '[]');
+    try {
+      currentLeaderboardData = JSON.parse(localStorage.getItem(key) || '[]');
+    } catch (error) {
+      currentLeaderboardData = [];
+    }
     currentLeaderboardData.sort((a, b) => b.wpm - a.wpm);
     renderLeaderboardTable(currentLeaderboardData);
   }
 
+  function extractClassCode(classValue) {
+    const match = String(classValue || '').match(/\b(80[1-9]|81[0-8])\b/);
+    return match ? match[1] : '';
+  }
+
+  function createScoreId() {
+    if (crypto.randomUUID) return crypto.randomUUID();
+    return `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+  }
+
   // 儲存打字成績
   function saveScore(name, classNum, wpm, acc) {
+    const classCode = extractClassCode(classNum);
     const scoreItem = {
       name,
       classNum,
+      classCode,
       wpm,
       acc,
       timestamp: new Date().toISOString()
@@ -759,40 +753,62 @@ document.addEventListener('DOMContentLoaded', () => {
     // 1. 寫入本地 LocalStorage (備用)
     const key = `LEADERBOARD_POEM_${currentPoemId}`;
     const localData = JSON.parse(localStorage.getItem(key) || '[]');
-    localData.push(scoreItem);
-    localStorage.setItem(key, JSON.stringify(localData));
-
-    // 2. 寫入 Firebase 即時資料庫 (即時電競)
-    if (useFirebase && database) {
-      try {
-        // 使用 push 建立唯一的 Firebase 節點並寫入
-        database.ref('leaderboards/poem_' + currentPoemId).push(scoreItem);
-      } catch (e) {
-        console.error("Firebase write error:", e);
-      }
-    } else {
-      // 離線狀態直接渲染本地排行
-      loadLocalStorageLeaderboard();
+    const existingIndex = localData.findIndex(item => item.name === name && item.classNum === classNum);
+    if (existingIndex < 0 || wpm > localData[existingIndex].wpm || (wpm === localData[existingIndex].wpm && acc > localData[existingIndex].acc)) {
+      if (existingIndex >= 0) localData[existingIndex] = scoreItem;
+      else localData.push(scoreItem);
     }
+    localStorage.setItem(key, JSON.stringify(localData));
+    loadLocalStorageLeaderboard();
   }
 
-  // 背景非同步發送至 Google 試算表（整合紀錄學生的打字進度）
-  function syncScoreToGoogleSheets(name, classNum, wpm, acc) {
-    if (!WEB_APP_URL) return;
-    
+  // 每次挑戰都保留教師診斷紀錄；公開榜只讀取準確率 95% 以上的個人最佳成績。
+  async function syncScoreToGoogleSheets(name, classNum, wpm, acc) {
+    if (!WEB_APP_URL) return Promise.reject(new Error('尚未設定同步網址'));
+    const classCode = extractClassCode(classNum);
+    if (!classCode) return Promise.reject(new Error('班級格式必須是 801～818'));
+
+    let playerPassId = '';
+    try {
+      playerPassId = JSON.parse(localStorage.getItem('MONO_PLAYER_PASS_DATA') || 'null')?.recordId || '';
+    } catch (error) {}
+
+    const scoreId = createScoreId();
     const params = new URLSearchParams();
+    params.append('type', 'typing-score');
+    params.append('scoreId', scoreId);
+    params.append('playerPassId', playerPassId);
+    params.append('timestamp', new Date().toISOString());
     params.append('name', name);
     params.append('classNum', classNum);
-    params.append('usage', `打字挑戰《${POEMS[currentPoemId].text.substring(0, 5)}...》: ${wpm} WPM (準確度: ${acc}%)`);
-    params.append('tools', 'Poetry Lab 打字遊戲');
-    params.append('wish', `打字挑戰解鎖成功！`);
+    params.append('classCode', classCode);
+    params.append('poemId', String(currentPoemId));
+    params.append('poemTitle', POEMS[currentPoemId].title);
+    params.append('wpm', String(wpm));
+    params.append('acc', String(acc));
+    params.append('mistakes', String(mistakeCount));
+    params.append('correctCount', String(correctCount));
+    params.append('durationSeconds', String(startTime ? Math.round((Date.now() - startTime) / 1000) : 0));
 
-    fetch(WEB_APP_URL, {
+    await fetch(WEB_APP_URL, {
       method: 'POST',
       mode: 'no-cors',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: params.toString()
-    }).catch(err => console.error('Cloud Sync Error:', err));
+    });
+
+    for (let attempt = 0; attempt < 3; attempt++) {
+      await new Promise(resolve => setTimeout(resolve, 700 + attempt * 500));
+      const verifyUrl = new URL(WEB_APP_URL);
+      verifyUrl.searchParams.set('action', 'score-status');
+      verifyUrl.searchParams.set('scoreId', scoreId);
+      verifyUrl.searchParams.set('_', String(Date.now()));
+      const response = await fetch(verifyUrl.toString(), { cache: 'no-store' });
+      if (!response.ok) continue;
+      const result = await response.json();
+      if (result.success && result.found) return result;
+    }
+    throw new Error('雲端未確認此筆紀錄');
   }
 
   // 9. 事件綁定
@@ -835,26 +851,56 @@ document.addEventListener('DOMContentLoaded', () => {
   // 關閉 Modal
   closeModalBtn.addEventListener('click', () => {
     scoreModal.style.display = 'none';
+    resetBtn.focus();
   });
 
   // 登記送出
-  submitScoreBtn.addEventListener('click', () => {
+  submitScoreBtn.addEventListener('click', async () => {
     const name = playerNameInput.value.trim();
     const classVal = playerClassInput.value.trim();
     const wpm = calculateWPM();
     const acc = calculateAcc();
+    const classCode = extractClassCode(classVal);
 
-    if (!name || !classVal) {
-      alert('請填寫呼號與班級！');
+    playerNameInput.setAttribute('aria-invalid', String(!name));
+    playerClassInput.setAttribute('aria-invalid', String(!classCode));
+    if (!name || !classCode) {
+      scoreSubmitStatus.textContent = '請填寫課堂暱稱，班級座號格式需為「801 15號」。';
+      scoreSubmitStatus.dataset.state = 'error';
       return;
     }
 
-    // 儲存並同步到 Firebase、LocalStorage，並備份到 Google Sheets
+    submitScoreBtn.disabled = true;
+    submitScoreBtn.setAttribute('aria-busy', 'true');
+    scoreSubmitStatus.textContent = '正在保存挑戰紀錄…';
+    scoreSubmitStatus.dataset.state = '';
     saveScore(name, classVal, wpm, acc);
-    syncScoreToGoogleSheets(name, classVal, wpm, acc);
-    
-    scoreModal.style.display = 'none';
-    alert('挑戰紀錄已登錄！');
+    try {
+      await syncScoreToGoogleSheets(name, classVal, wpm, acc);
+      scoreSubmitStatus.textContent = acc >= 95
+        ? '紀錄已送出，符合公開排行資格。'
+        : '紀錄已送交教師；準確率未達 95%，不列入公開排行。';
+      scoreSubmitStatus.dataset.state = 'success';
+      setTimeout(() => {
+        scoreModal.style.display = 'none';
+        resetBtn.focus();
+        initRealtimeLeaderboardListener();
+      }, 900);
+    } catch (error) {
+      console.error('Cloud Sync Error:', error);
+      scoreSubmitStatus.textContent = '雲端同步失敗，本機紀錄已保留，請稍後再試。';
+      scoreSubmitStatus.dataset.state = 'error';
+    } finally {
+      submitScoreBtn.disabled = false;
+      submitScoreBtn.removeAttribute('aria-busy');
+    }
+  });
+
+  document.addEventListener('keydown', event => {
+    if (event.key === 'Escape' && scoreModal.style.display === 'flex') {
+      scoreModal.style.display = 'none';
+      resetBtn.focus();
+    }
   });
 
   // 排行榜頁籤切換
