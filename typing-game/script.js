@@ -49,6 +49,7 @@ document.addEventListener('DOMContentLoaded', () => {
   
   const resetBtn = document.getElementById('reset-game-btn');
   const editPlayerBtn = document.getElementById('edit-player-btn');
+  const currentPlayerProfile = document.getElementById('current-player-profile');
   const soundModeSelect = document.getElementById('sound-mode-select');
   const levelBtns = document.querySelectorAll('.level-btn');
   const leaderboardRows = document.getElementById('leaderboard-rows');
@@ -77,6 +78,30 @@ document.addEventListener('DOMContentLoaded', () => {
   // Google Apps Script Sync URL
   const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbx_-OZHwtIXIwLz20hWBMoLD1ffPqyBvzhwCTSf8l4ytAorxBTPljqsmXCkrydGvOIe/exec';
   const TYPING_PLAYER_PROFILE_KEY = 'TYPING_PLAYER_PROFILE';
+
+  function readLatestPlayerProfile() {
+    for (const key of [TYPING_PLAYER_PROFILE_KEY, 'MONO_PLAYER_PASS_DATA']) {
+      try {
+        const parsed = JSON.parse(localStorage.getItem(key) || 'null');
+        if (parsed?.name && parsed?.classNum) return parsed;
+      } catch (error) {}
+    }
+    return null;
+  }
+
+  function renderCurrentPlayerProfile(profile = readLatestPlayerProfile()) {
+    if (!currentPlayerProfile) return;
+    currentPlayerProfile.textContent = profile
+      ? `[ CURRENT_PLAYER ] ${profile.name} // ${profile.classNum}`
+      : '[ CURRENT_PLAYER ] 尚未設定玩家資料';
+  }
+
+  renderCurrentPlayerProfile();
+  window.addEventListener('storage', (event) => {
+    if ([TYPING_PLAYER_PROFILE_KEY, 'MONO_PLAYER_PASS_DATA'].includes(event.key)) {
+      renderCurrentPlayerProfile();
+    }
+  });
 
   // 3. 遊戲內部變數
   let currentPoemId = 0;
@@ -642,16 +667,7 @@ document.addEventListener('DOMContentLoaded', () => {
       modalWpm.textContent = calculateWPM();
       modalAcc.textContent = `${calculateAcc()}%`;
       // 優先載入主頁通行證；直接進入遊戲時則載入上次在遊戲內儲存的資料。
-      let savedProfile = null;
-      for (const key of ['MONO_PLAYER_PASS_DATA', TYPING_PLAYER_PROFILE_KEY]) {
-        try {
-          const parsed = JSON.parse(localStorage.getItem(key) || 'null');
-          if (parsed?.name && parsed?.classNum) {
-            savedProfile = parsed;
-            break;
-          }
-        } catch (error) {}
-      }
+      const savedProfile = readLatestPlayerProfile();
       playerNameInput.value = savedProfile?.name || '';
       playerClassInput.value = savedProfile?.classNum || '';
 
@@ -870,16 +886,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // 開始遊戲前也能更換本裝置記住的課堂識別資料，不會送出成績。
   editPlayerBtn.addEventListener('click', () => {
     isProfileEditMode = true;
-    let savedProfile = null;
-    for (const key of [TYPING_PLAYER_PROFILE_KEY, 'MONO_PLAYER_PASS_DATA']) {
-      try {
-        const parsed = JSON.parse(localStorage.getItem(key) || 'null');
-        if (parsed?.name && parsed?.classNum) {
-          savedProfile = parsed;
-          break;
-        }
-      } catch (error) {}
-    }
+    const savedProfile = readLatestPlayerProfile();
     playerNameInput.value = savedProfile?.name || '';
     playerClassInput.value = savedProfile?.classNum || '';
     scoreModalTitle.textContent = '[ PLAYER_PROFILE // 更換玩家資料 ]';
@@ -914,6 +921,7 @@ document.addEventListener('DOMContentLoaded', () => {
       classNum: classVal,
       updatedAt: new Date().toISOString()
     }));
+    renderCurrentPlayerProfile({ name, classNum: classVal });
 
     if (isProfileEditMode) {
       const seatMatch = classVal.match(/(?:80[1-9]|81[0-8])[^0-9]*(\d{1,2})/);

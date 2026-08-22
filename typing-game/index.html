@@ -22,7 +22,7 @@
     <header class="game-header border-bottom-medium">
       <div class="brand">
         <span class="pulse-dot"></span>
-        <h1 class="font-display">POETRY_LAB // v1.0.6</h1>
+        <h1 class="font-display">POETRY_LAB // v1.1.0</h1>
       </div>
       <div class="sys-status font-mono">
         SYSTEM: ACTIVE // CONNECTION: SECURE // TERMINAL_801
@@ -94,6 +94,9 @@
         <div class="console-body">
           <p class="status-msg">&gt; 鍵盤音效已載入。請切換為中文輸入法，開始輸入黃色標記字元。</p>
           <p class="status-msg text-dim">&gt; 中打提示：直接打出對應中文。打字熟練度關係到系統生存度！</p>
+          <div id="current-player-profile" class="current-player-profile" role="status" aria-live="polite">
+            [ CURRENT_PLAYER ] 尚未設定玩家資料
+          </div>
           <div class="console-actions" style="display: flex; gap: 16px; align-items: center; flex-wrap: wrap;">
             <button id="reset-game-btn" class="retro-btn btn-sm">[ ✏️ RESTART // 重來 ]</button>
             <button id="edit-player-btn" class="retro-btn btn-sm btn-outline">[ 👤 更換班級／座號 ]</button>
@@ -191,6 +194,6 @@
   <!-- 回首頁按鈕 -->
   <a href="../index.html" class="back-home-badge font-mono">[ &larr; BACK_TO_PROFILE // 返回主頁 ]</a>
 
-  <script src="script.js?v=1.0.9"></script>
+  <script src="script.js?v=1.1.0"></script>
 </body>
 </html>

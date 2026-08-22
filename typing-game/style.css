@@ -138,6 +138,16 @@ body.retro-theme {
   text-shadow: 0 0 10px var(--neon-green-dim);
 }
 
+.current-player-profile {
+  margin: 12px 0;
+  padding: 8px 10px;
+  border-left: 3px solid var(--neon-green);
+  background: var(--neon-green-dim);
+  color: var(--retro-text-bright);
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
 .progress-bar-wrapper {
   background-color: var(--retro-gray);
   height: 6px;
