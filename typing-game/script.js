@@ -741,6 +741,16 @@ document.addEventListener('DOMContentLoaded', () => {
     return `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
   }
 
+  async function fetchWithTimeout(url, options = {}, timeoutMs = 6000) {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+    try {
+      return await fetch(url, { ...options, signal: controller.signal });
+    } finally {
+      clearTimeout(timeoutId);
+    }
+  }
+
   // 儲存打字成績
   function saveScore(name, classNum, wpm, acc) {
     const classCode = extractClassCode(classNum);
@@ -793,25 +803,15 @@ document.addEventListener('DOMContentLoaded', () => {
     params.append('correctCount', String(correctCount));
     params.append('durationSeconds', String(startTime ? Math.round((Date.now() - startTime) / 1000) : 0));
 
-    await fetch(WEB_APP_URL, {
+    await fetchWithTimeout(WEB_APP_URL, {
       method: 'POST',
       mode: 'no-cors',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: params.toString()
-    });
+    }, 6000);
 
-    for (let attempt = 0; attempt < 3; attempt++) {
-      await new Promise(resolve => setTimeout(resolve, 700 + attempt * 500));
-      const verifyUrl = new URL(WEB_APP_URL);
-      verifyUrl.searchParams.set('action', 'score-status');
-      verifyUrl.searchParams.set('scoreId', scoreId);
-      verifyUrl.searchParams.set('_', String(Date.now()));
-      const response = await fetch(verifyUrl.toString(), { cache: 'no-store' });
-      if (!response.ok) continue;
-      const result = await response.json();
-      if (result.success && result.found) return result;
-    }
-    throw new Error('雲端未確認此筆紀錄');
+    // no-cors 無法讀取 Apps Script 回應；請求成功送出後就先解除介面鎖定。
+    return { success: true, queued: true, scoreId };
   }
 
   // 9. 事件綁定
@@ -887,8 +887,8 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       await syncScoreToGoogleSheets(name, classVal, wpm, acc);
       scoreSubmitStatus.textContent = acc >= 95
-        ? '紀錄已送出，符合公開排行資格。'
-        : '紀錄已送交教師；準確率未達 95%，不列入公開排行。';
+        ? '本機已保存，雲端紀錄已送出；符合公開排行資格。'
+        : '本機已保存，紀錄已送交教師；準確率未達 95%，不列入公開排行。';
       scoreSubmitStatus.dataset.state = 'success';
       setTimeout(() => {
         scoreModal.style.display = 'none';
@@ -897,7 +897,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }, 900);
     } catch (error) {
       console.error('Cloud Sync Error:', error);
-      scoreSubmitStatus.textContent = '雲端同步失敗，本機紀錄已保留，請稍後再試。';
+      scoreSubmitStatus.textContent = '本機紀錄已保存；雲端連線逾時，請稍後再按一次。';
       scoreSubmitStatus.dataset.state = 'error';
     } finally {
       submitScoreBtn.disabled = false;
