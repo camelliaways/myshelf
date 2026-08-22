@@ -1,0 +1,10 @@
+.git
+.git/**
+.github
+.github/**
+.wrangler
+.wrangler/**
+apps-script
+apps-script/**
+wrangler.jsonc
+.assetsignore
