@@ -71,7 +71,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const scoreSubmitStatus = document.getElementById('score-submit-status');
 
   // Google Apps Script Sync URL
-  const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbx6KKDsk-qNoCaw-03i7enBR6tZLwqZSnEU8n7wpunK2J-f_AlIhmRBR86H4VRqDKnX/exec';
+  const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbx_-OZHwtIXIwLz20hWBMoLD1ffPqyBvzhwCTSf8l4ytAorxBTPljqsmXCkrydGvOIe/exec';
 
   // 3. 遊戲內部變數
   let currentPoemId = 0;

@@ -1,5 +1,9 @@
 # Player Pass Apps Script
 
+目前打字排行榜使用的部署網址：
+
+`https://script.google.com/macros/s/AKfycbx_-OZHwtIXIwLz20hWBMoLD1ffPqyBvzhwCTSf8l4ytAorxBTPljqsmXCkrydGvOIe/exec`
+
 1. 開啟保存學生紀錄的 Google 試算表。
 2. 選擇「擴充功能 → Apps Script」。
 3. 將 `Code.gs` 全部內容貼入編輯器並儲存。
