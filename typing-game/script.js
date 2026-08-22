@@ -916,12 +916,36 @@ document.addEventListener('DOMContentLoaded', () => {
     }));
 
     if (isProfileEditMode) {
-      scoreSubmitStatus.textContent = `已記住 ${classVal}；完成挑戰後會自動帶入。`;
-      scoreSubmitStatus.dataset.state = 'success';
-      setTimeout(() => {
-        scoreModal.style.display = 'none';
-        typingInput.focus();
-      }, 700);
+      const seatMatch = classVal.match(/(?:80[1-9]|81[0-8])[^0-9]*(\d{1,2})/);
+      const seatNum = seatMatch ? String(Number(seatMatch[1])).padStart(2, '0') : '';
+      const profileParams = new URLSearchParams({
+        action: 'playerProfile',
+        classCode,
+        classNum: classCode,
+        seatNum,
+        name
+      });
+      submitScoreBtn.disabled = true;
+      scoreSubmitStatus.textContent = '正在同步玩家資料…';
+      try {
+        await fetchWithTimeout(WEB_APP_URL, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: profileParams.toString()
+        }, 6000);
+        scoreSubmitStatus.textContent = `已記住並同步 ${classVal}；完成挑戰後會自動帶入。`;
+        scoreSubmitStatus.dataset.state = 'success';
+        setTimeout(() => {
+          scoreModal.style.display = 'none';
+          typingInput.focus();
+        }, 900);
+      } catch (error) {
+        scoreSubmitStatus.textContent = '已保存在這台電腦，但雲端同步失敗；請稍後再按一次。';
+        scoreSubmitStatus.dataset.state = 'error';
+      } finally {
+        submitScoreBtn.disabled = false;
+      }
       return;
     }
 
