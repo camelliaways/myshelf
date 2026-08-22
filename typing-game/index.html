@@ -96,6 +96,7 @@
           <p class="status-msg text-dim">&gt; 中打提示：直接打出對應中文。打字熟練度關係到系統生存度！</p>
           <div class="console-actions" style="display: flex; gap: 16px; align-items: center; flex-wrap: wrap;">
             <button id="reset-game-btn" class="retro-btn btn-sm">[ ✏️ RESTART // 重來 ]</button>
+            <button id="edit-player-btn" class="retro-btn btn-sm btn-outline">[ 👤 更換班級／座號 ]</button>
             <div style="display: flex; align-items: center; gap: 6px;">
               <span class="text-dim">音效 SOUND:</span>
               <select id="sound-mode-select" class="class-select-mini" style="padding: 4px 8px; font-size: 0.75rem; cursor: pointer;">
@@ -164,7 +165,7 @@
     <div class="modal-content border-medium font-mono">
       <h3 id="score-modal-title" class="modal-title font-display">[ QUEST_COMPLETED // 任務解鎖成功 ]</h3>
       <div class="modal-body">
-        <p>你已成功完成挑戰！請登記你的玩家資料：</p>
+        <p id="score-modal-intro">你已成功完成挑戰！請登記你的玩家資料：</p>
         <div class="form-row">
           <label for="player-name">呼號 NAME:</label>
           <input type="text" id="player-name" class="retro-input" placeholder="例如：PixelFox（請勿填真名）" maxlength="20" required>
@@ -174,7 +175,7 @@
           <input type="text" id="player-class" class="retro-input" placeholder="例如：801 15號" pattern="(80[1-9]|81[0-8])[^0-9]*[0-9]{1,2}號?" aria-describedby="score-form-hint" required>
         </div>
         <p id="score-form-hint" class="form-hint">班級限 801～818；完整座號只供教師紀錄，公開榜不顯示座號。</p>
-        <div class="stats-summary border-thin">
+        <div id="score-stats-summary" class="stats-summary border-thin">
           <p>打字速度 / SPEED: <strong id="modal-wpm">0</strong> WPM</p>
           <p>準確率 / ACCURACY: <strong id="modal-acc">100%</strong></p>
         </div>
@@ -190,6 +191,6 @@
   <!-- 回首頁按鈕 -->
   <a href="../index.html" class="back-home-badge font-mono">[ &larr; BACK_TO_PROFILE // 返回主頁 ]</a>
 
-  <script src="script.js?v=1.0.6"></script>
+  <script src="script.js?v=1.0.7"></script>
 </body>
 </html>

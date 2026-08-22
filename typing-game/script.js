@@ -48,6 +48,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const timeBar = document.getElementById('time-bar');
   
   const resetBtn = document.getElementById('reset-game-btn');
+  const editPlayerBtn = document.getElementById('edit-player-btn');
   const soundModeSelect = document.getElementById('sound-mode-select');
   const levelBtns = document.querySelectorAll('.level-btn');
   const leaderboardRows = document.getElementById('leaderboard-rows');
@@ -62,6 +63,9 @@ document.addEventListener('DOMContentLoaded', () => {
   
   // 成績 Modal
   const scoreModal = document.getElementById('score-modal');
+  const scoreModalTitle = document.getElementById('score-modal-title');
+  const scoreModalIntro = document.getElementById('score-modal-intro');
+  const scoreStatsSummary = document.getElementById('score-stats-summary');
   const modalWpm = document.getElementById('modal-wpm');
   const modalAcc = document.getElementById('modal-acc');
   const playerNameInput = document.getElementById('player-name');
@@ -90,6 +94,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let comboCount = 0;
   let soundMode = 'retro-beep'; // 'retro-beep', 'silent'
   let isGameOver = false;
+  let isProfileEditMode = false;
 
   // Web Audio API 鍵盤音效播放器 (多模音效：支援機械青軸、復古打字機、電子嗶嗶音)
   let audioCtx = null;
@@ -627,6 +632,11 @@ document.addEventListener('DOMContentLoaded', () => {
     isGameOver = true;
     
     if (isSuccess) {
+      isProfileEditMode = false;
+      scoreModalTitle.textContent = '[ QUEST_COMPLETED // 任務解鎖成功 ]';
+      scoreModalIntro.textContent = '你已成功完成挑戰！請登記你的玩家資料：';
+      scoreStatsSummary.style.display = '';
+      submitScoreBtn.textContent = '[ 💾 儲存本次成績 ]';
       playTypewriterBell();
       // 跳出登記視窗
       modalWpm.textContent = calculateWPM();
@@ -857,6 +867,31 @@ document.addEventListener('DOMContentLoaded', () => {
     resetBtn.focus();
   });
 
+  // 開始遊戲前也能更換本裝置記住的課堂識別資料，不會送出成績。
+  editPlayerBtn.addEventListener('click', () => {
+    isProfileEditMode = true;
+    let savedProfile = null;
+    for (const key of [TYPING_PLAYER_PROFILE_KEY, 'MONO_PLAYER_PASS_DATA']) {
+      try {
+        const parsed = JSON.parse(localStorage.getItem(key) || 'null');
+        if (parsed?.name && parsed?.classNum) {
+          savedProfile = parsed;
+          break;
+        }
+      } catch (error) {}
+    }
+    playerNameInput.value = savedProfile?.name || '';
+    playerClassInput.value = savedProfile?.classNum || '';
+    scoreModalTitle.textContent = '[ PLAYER_PROFILE // 更換玩家資料 ]';
+    scoreModalIntro.textContent = '修改這台電腦記住的課堂暱稱與班級座號；這次不會送出成績。';
+    scoreStatsSummary.style.display = 'none';
+    submitScoreBtn.textContent = '[ 💾 儲存玩家資料 ]';
+    scoreSubmitStatus.textContent = '格式範例：801 15號。';
+    scoreSubmitStatus.dataset.state = '';
+    scoreModal.style.display = 'flex';
+    playerNameInput.focus();
+  });
+
   // 儲存成績與學生在本裝置使用的課堂識別資料。
   async function submitScore() {
     const name = playerNameInput.value.trim();
@@ -867,7 +902,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     playerNameInput.setAttribute('aria-invalid', String(!name));
     playerClassInput.setAttribute('aria-invalid', String(!classCode));
-    if (!name || !classCode) {
+    const hasValidSeat = /(?:80[1-9]|81[0-8])[^0-9]*([1-9]|[1-4][0-9]|50)號?$/.test(classVal);
+    if (!name || !classCode || !hasValidSeat) {
       scoreSubmitStatus.textContent = '請填寫課堂暱稱，班級座號格式需為「801 15號」。';
       scoreSubmitStatus.dataset.state = 'error';
       return;
@@ -878,6 +914,16 @@ document.addEventListener('DOMContentLoaded', () => {
       classNum: classVal,
       updatedAt: new Date().toISOString()
     }));
+
+    if (isProfileEditMode) {
+      scoreSubmitStatus.textContent = `已記住 ${classVal}；完成挑戰後會自動帶入。`;
+      scoreSubmitStatus.dataset.state = 'success';
+      setTimeout(() => {
+        scoreModal.style.display = 'none';
+        typingInput.focus();
+      }, 700);
+      return;
+    }
 
     submitScoreBtn.disabled = true;
     submitScoreBtn.setAttribute('aria-busy', 'true');
