@@ -95,15 +95,22 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // 3.3 Google Apps Script 直連同步設定
-  const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbx6KKDsk-qNoCaw-03i7enBR6tZLwqZSnEU8n7wpunK2J-f_AlIhmRBR86H4VRqDKnX/exec';
+  const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbx_-OZHwtIXIwLz20hWBMoLD1ffPqyBvzhwCTSf8l4ytAorxBTPljqsmXCkrydGvOIe/exec';
 
   function directSyncToSpreadsheet(data) {
     if (!WEB_APP_URL) return Promise.reject(new Error('尚未設定同步網址'));
     const params = new URLSearchParams();
+    const classMatch = data.classNum.match(/80[1-9]|81[0-8]/);
+    const classCode = classMatch ? classMatch[0] : '';
+    const seatDigits = data.classNum.replace(classCode, '').match(/\d{1,2}/);
+    const seatNum = seatDigits ? seatDigits[0].padStart(2, '0') : '';
+    params.append('action', 'playerPass');
     params.append('recordId', data.recordId);
     params.append('timestamp', data.timestamp);
     params.append('name', data.name);
     params.append('classNum', data.classNum);
+    params.append('classCode', classCode);
+    params.append('seatNum', seatNum);
     params.append('usage', data.usage);
     params.append('tools', data.tools.join(', '));
     params.append('wish', data.wish);
