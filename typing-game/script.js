@@ -902,7 +902,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     playerNameInput.setAttribute('aria-invalid', String(!name));
     playerClassInput.setAttribute('aria-invalid', String(!classCode));
-    const hasValidSeat = /(?:80[1-9]|81[0-8])[^0-9]*([1-9]|[1-4][0-9]|50)號?$/.test(classVal);
+    const hasValidSeat = /(?:80[1-9]|81[0-8])[^0-9]*(0?[1-9]|[1-4][0-9]|50)號?$/.test(classVal);
     if (!name || !classCode || !hasValidSeat) {
       scoreSubmitStatus.textContent = '請填寫課堂暱稱，班級座號格式需為「801 15號」。';
       scoreSubmitStatus.dataset.state = 'error';
